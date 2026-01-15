@@ -5,6 +5,7 @@ import ConfigError from './components/ui/ConfigError'
 import CRMView from './pages/CRMView'
 import DeepView from './pages/DeepView'
 import Login from './pages/Login'
+import AuthCallback from './pages/AuthCallback'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { getSupabaseConfigError } from './lib/supabase'
 
@@ -34,8 +35,9 @@ function App() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Public route */}
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         
         {/* Protected routes */}
         <Route

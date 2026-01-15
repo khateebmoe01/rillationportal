@@ -7,7 +7,9 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   client: string | null // Client extracted from user metadata
+  role: 'admin' | 'client' | null // User role
   signIn: (email: string, password: string) => Promise<{ error: any }>
+  signInWithOAuth: (provider: 'google' | 'github' | 'azure') => Promise<{ error: any }>
   signOut: () => Promise<void>
 }
 
@@ -18,13 +20,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [client, setClient] = useState<string | null>(null)
+  const [role, setRole] = useState<'admin' | 'client' | null>(null)
 
-  // Extract client from user metadata
+  // Extract client and role from user metadata
   useEffect(() => {
-    if (user?.user_metadata?.client) {
-      setClient(user.user_metadata.client)
+    if (user?.user_metadata) {
+      // Role: 'admin' or 'client' (defaults to 'client' for portal users)
+      const userRole = user.user_metadata.role || 'client'
+      setRole(userRole as 'admin' | 'client')
+      
+      // Client: only set for client role users
+      if (userRole === 'client' && user.user_metadata.client) {
+        setClient(user.user_metadata.client)
+      } else {
+        setClient(null)
+      }
     } else {
       setClient(null)
+      setRole(null)
     }
   }, [user])
 
@@ -56,9 +69,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error }
   }
 
+  const signInWithOAuth = async (provider: 'google' | 'github' | 'azure') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          // Pass app identifier to distinguish portal vs internal hub
+          app: 'portal',
+        },
+      },
+    })
+    return { error }
+  }
+
   const signOut = async () => {
     await supabase.auth.signOut()
     setClient(null)
+    setRole(null)
   }
 
   return (
@@ -68,7 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         loading,
         client,
+        role,
         signIn,
+        signInWithOAuth,
         signOut,
       }}
     >

@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading, client } = useAuth()
+  const { user, loading, client, role } = useAuth()
 
   if (loading) {
     return (
@@ -23,6 +23,24 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  // Portal only allows client role users
+  if (role !== 'client') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-rillation-bg">
+        <div className="max-w-md w-full bg-rillation-card rounded-lg shadow-lg p-8 border border-rillation-border">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-rillation-text mb-2">
+              Access Denied
+            </h1>
+            <p className="text-rillation-text-muted">
+              This portal is for client users only. Admin users should use the internal hub.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Check if user has a client assigned
