@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { getAppIdentifier, getOAuthRedirectUrl } from '../lib/auth-helpers'
 
 interface AuthContextType {
   user: User | null
@@ -73,10 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: getOAuthRedirectUrl(),
         queryParams: {
           // Pass app identifier to distinguish portal vs internal hub
-          app: 'portal',
+          // This helps with automatic role assignment in Edge Functions
+          app: getAppIdentifier(),
         },
       },
     })

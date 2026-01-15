@@ -1,99 +1,100 @@
-# OAuth Setup Guide for Client Portal
+# OAuth Setup Guide for Two Separate Frontends
 
-This guide explains how to set up OAuth authentication for the client portal while maintaining separation from the internal hub.
+This guide explains how to set up OAuth authentication when you have **two completely separate frontend applications**:
+1. **Internal Hub** (`rillation-sb-react`) - Admin dashboard
+2. **Client Portal** (`rillationportal`) - Client-facing dashboard
 
 ## Architecture Overview
 
-- **Internal Hub** (`rillation-sb-react`): Admin users with `role: 'admin'` can see all clients
-- **Client Portal** (`rillationportal`): Client users with `role: 'client'` and `client: 'ClientName'` can only see their own data
+Both frontends can use the **same Supabase project** but with different redirect URLs and role-based access control.
 
-Both systems use the **same Supabase project** but differentiate users by metadata.
+```
+┌─────────────────┐         ┌─────────────────┐
+│  Internal Hub   │         │  Client Portal  │
+│  (Admin App)    │         │  (Client App)   │
+└────────┬────────┘         └────────┬────────┘
+         │                            │
+         └────────────┬───────────────┘
+                      │
+              ┌───────▼────────┐
+              │  Supabase Auth  │
+              │  (Same Project) │
+              └─────────────────┘
+```
 
-## User Metadata Structure
+## Option 1: Same Supabase Project (Recommended)
 
+### Benefits
+- Single source of truth for users
+- Easier user management
+- Shared database with RLS policies
+
+### Setup Steps
+
+#### 1. Configure OAuth Providers in Supabase
+
+1. Go to **Supabase Dashboard** → **Authentication** → **Providers**
+2. Enable your OAuth providers (Google, GitHub, Azure, etc.)
+3. For each provider, add **both redirect URLs**:
+   - Internal Hub: `https://your-internal-hub.com/auth/callback`
+   - Client Portal: `https://your-portal.com/auth/callback`
+   - Local dev: `http://localhost:5173/auth/callback` (internal hub)
+   - Local dev: `http://localhost:3000/auth/callback` (portal)
+
+#### 2. Set Up OAuth Apps (Provider-Side)
+
+For each OAuth provider, you need to register your apps:
+
+**Google OAuth:**
+- Go to [Google Cloud Console](https://console.cloud.google.com/)
+- Create OAuth 2.0 credentials
+- Add authorized redirect URIs:
+  - `https://[your-project].supabase.co/auth/v1/callback`
+- Copy Client ID and Secret to Supabase
+
+**GitHub OAuth:**
+- Go to GitHub → Settings → Developer settings → OAuth Apps
+- Create new OAuth App
+- Set Authorization callback URL:
+  - `https://[your-project].supabase.co/auth/v1/callback`
+- Copy Client ID and Secret to Supabase
+
+**Azure AD:**
+- Go to Azure Portal → App Registrations
+- Create new registration
+- Add redirect URI:
+  - `https://[your-project].supabase.co/auth/v1/callback`
+- Copy Application (client) ID and Secret to Supabase
+
+#### 3. User Metadata Structure
+
+After OAuth sign-in, assign metadata to users:
+
+**For Internal Hub (Admin Users):**
 ```json
 {
-  "role": "admin" | "client",
-  "client": "ClientName"  // Only required for client role
+  "role": "admin"
 }
 ```
 
-## Step 1: Configure OAuth Providers in Supabase
-
-1. Go to **Supabase Dashboard** → **Authentication** → **Providers**
-2. Enable your OAuth providers:
-   - **Google**
-   - **GitHub**
-   - **Azure AD** (Microsoft)
-   - Any other providers you need
-
-3. For each provider, configure:
-   - **Client ID** and **Client Secret** (from your OAuth app)
-   - **Redirect URLs**:
-     - Internal Hub: `https://your-internal-hub.com/auth/callback`
-     - Client Portal: `https://your-portal.com/auth/callback`
-
-## Step 2: Set Up OAuth Apps
-
-### Google OAuth
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create OAuth 2.0 credentials
-3. Add authorized redirect URIs:
-   - `https://[your-project].supabase.co/auth/v1/callback`
-4. Copy Client ID and Secret to Supabase
-
-### GitHub OAuth
-1. Go to GitHub → Settings → Developer settings → OAuth Apps
-2. Create new OAuth App
-3. Set Authorization callback URL:
-   - `https://[your-project].supabase.co/auth/v1/callback`
-4. Copy Client ID and Secret to Supabase
-
-### Azure AD OAuth
-1. Go to Azure Portal → App Registrations
-2. Create new registration
-3. Add redirect URI:
-   - `https://[your-project].supabase.co/auth/v1/callback`
-4. Copy Application (client) ID and Secret to Supabase
-
-## Step 3: Assign User Roles and Clients
-
-After users sign in via OAuth, you need to assign their role and client.
-
-### Option A: Manual Assignment (Supabase Dashboard)
-
-1. Go to **Authentication** → **Users**
-2. Find the user (they'll appear after first OAuth sign-in)
-3. Click on the user → **User Metadata**
-4. Add:
-   ```json
-   {
-     "role": "client",
-     "client": "ClientName"
-   }
-   ```
-
-### Option B: Automatic Assignment via Database Function
-
-Use the helper function from the migration:
-
-```sql
--- Assign client role and client name
-SELECT update_user_role(
-  'user-id-here'::UUID,
-  'client',
-  'ClientName'
-);
-
--- Or assign admin role
-SELECT update_user_role(
-  'user-id-here'::UUID,
-  'admin',
-  NULL
-);
+**For Client Portal (Client Users):**
+```json
+{
+  "role": "client",
+  "client": "ClientName"
+}
 ```
 
-### Option C: Post-Auth Hook (Recommended for Production)
+#### 4. Assign Roles After OAuth Sign-In
+
+**Option A: Manual Assignment (Supabase Dashboard)**
+1. User signs in via OAuth
+2. Go to **Authentication** → **Users**
+3. Find the user
+4. Edit **User Metadata**
+5. Add role and client as shown above
+
+**Option B: Automatic Assignment (Edge Function)**
 
 Create a Supabase Edge Function that runs after OAuth sign-in:
 
@@ -103,20 +104,29 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 serve(async (req) => {
-  const { user } = await req.json()
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  )
+
+  const { user, app } = await req.json()
   
-  // Determine role and client based on email domain or other criteria
-  const email = user.email
-  const isAdmin = email.endsWith('@yourcompany.com')
-  
-  if (isAdmin) {
-    // Update user metadata to admin
+  // Determine role based on which app they're signing into
+  // You can pass 'app' parameter in OAuth options
+  if (app === 'internal-hub') {
+    // Check if user should be admin (e.g., email domain)
+    const isAdmin = user.email.endsWith('@yourcompany.com')
+    
     await supabase.auth.admin.updateUserById(user.id, {
-      user_metadata: { role: 'admin' }
+      user_metadata: { 
+        role: isAdmin ? 'admin' : 'client',
+        // If client, you might need to look up client from email domain
+        client: isAdmin ? null : extractClientFromEmail(user.email)
+      }
     })
-  } else {
-    // Extract client from email domain or lookup table
-    const client = extractClientFromEmail(email)
+  } else if (app === 'portal') {
+    // Portal users are always clients
+    const client = extractClientFromEmail(user.email) // or lookup table
     
     await supabase.auth.admin.updateUserById(user.id, {
       user_metadata: { 
@@ -130,26 +140,132 @@ serve(async (req) => {
     headers: { 'Content-Type': 'application/json' },
   })
 })
+
+function extractClientFromEmail(email: string): string {
+  // Example: extract client from email domain
+  // Or query a lookup table
+  const domain = email.split('@')[1]
+  // Map domain to client name
+  return 'ClientName' // Replace with actual logic
+}
 ```
 
-Then configure it as a webhook in Supabase:
+Then configure as a webhook:
 - **Database** → **Webhooks** → **New Webhook**
 - Trigger: `auth.users` table, `INSERT` event
 - Action: Call your Edge Function
 
-## Step 4: Update RLS Policies
+#### 5. Update OAuth Sign-In to Pass App Identifier
 
-The existing migration (`20250110000000_client_isolation_policies.sql`) already sets up client-based RLS.
+In both frontends, update the OAuth sign-in to pass which app they're using:
 
-**For Client Portal**: Policies are strict - users can only see their client's data.
+**Internal Hub:**
+```typescript
+const signInWithOAuth = async (provider: 'google' | 'github' | 'azure') => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: {
+        app: 'internal-hub', // Identifier for which app
+      },
+    },
+  })
+  return { error }
+}
+```
 
-**For Internal Hub**: You may want to add admin override. Update policies like:
+**Client Portal:**
+```typescript
+const signInWithOAuth = async (provider: 'google' | 'github' | 'azure') => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: {
+        app: 'portal', // Identifier for which app
+      },
+    },
+  })
+  return { error }
+}
+```
 
+#### 6. Environment Variables
+
+**Internal Hub (.env):**
+```env
+VITE_SUPABASE_URL=https://[your-project].supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+**Client Portal (.env):**
+```env
+VITE_SUPABASE_URL=https://[your-project].supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Both use the same Supabase project!
+
+## Option 2: Separate Supabase Projects (Complete Isolation)
+
+If you want complete separation between the two apps:
+
+### Benefits
+- Complete isolation
+- Different security settings
+- Independent scaling
+
+### Setup
+
+1. Create two Supabase projects:
+   - Project 1: Internal Hub
+   - Project 2: Client Portal
+
+2. Configure OAuth in each project separately
+
+3. Use different environment variables in each app
+
+4. Sync user data between projects if needed (via Edge Functions or scripts)
+
+## Recommended Approach: Option 1 (Same Project)
+
+Using the same Supabase project is recommended because:
+- ✅ Single user database
+- ✅ Shared RLS policies
+- ✅ Easier user management
+- ✅ Users can potentially access both apps (if you allow it)
+- ✅ Simpler setup
+
+## Access Control Flow
+
+### Internal Hub Flow:
+1. User clicks OAuth button
+2. Redirects to OAuth provider
+3. User authenticates
+4. Redirects to `internal-hub.com/auth/callback`
+5. App checks: `role === 'admin'` ✅
+6. Grants access to all clients
+
+### Client Portal Flow:
+1. User clicks OAuth button
+2. Redirects to OAuth provider
+3. User authenticates
+4. Redirects to `portal.com/auth/callback`
+5. App checks: `role === 'client'` AND `client` exists ✅
+6. RLS policies enforce: only see their client's data
+
+## RLS Policies
+
+The client portal already has strict RLS policies that check:
 ```sql
--- Example: Allow admins to see all, clients to see their own
-DROP POLICY IF EXISTS "Users can only see their client's replies" ON replies;
+client = (auth.jwt() ->> 'client')
+```
 
-CREATE POLICY "Admins see all, clients see their own replies"
+For the internal hub, you can create policies that allow admins:
+```sql
+-- Example for internal hub
+CREATE POLICY "Admins see all, clients see their own"
 ON replies
 FOR SELECT
 TO authenticated
@@ -160,48 +276,48 @@ USING (
 );
 ```
 
-## Step 5: Test OAuth Flow
+## Testing
 
-1. Go to your portal login page
-2. Click an OAuth provider button (Google, GitHub, etc.)
-3. Complete OAuth sign-in
-4. You'll be redirected to `/auth/callback`
-5. The callback handler checks for role and client
-6. If valid, redirects to `/crm`
+1. **Test Internal Hub OAuth:**
+   - Sign in with admin account
+   - Should see all clients
+   - Verify role is 'admin'
+
+2. **Test Client Portal OAuth:**
+   - Sign in with client account
+   - Should only see their client's data
+   - Verify role is 'client' and client is set
+
+3. **Test Access Control:**
+   - Try accessing portal with admin account → Should be blocked
+   - Try accessing internal hub with client account → Should work (if policies allow)
 
 ## Troubleshooting
 
-### "No Client Assigned" Error
-- User signed in but doesn't have `client` in metadata
-- Solution: Assign client via Supabase Dashboard or database function
+### "Redirect URI mismatch" Error
+- Ensure redirect URLs in OAuth provider match exactly
+- Check Supabase redirect URL settings
+- Include both production and localhost URLs for dev
 
-### "Access Denied" Error
-- User has `role: 'admin'` but is trying to access portal
-- Solution: Admin users should use the internal hub, not the portal
-
-### OAuth Redirect Fails
-- Check redirect URLs match exactly in OAuth provider settings
-- Ensure Supabase project URL is correct
+### User Can't Sign In
+- Check OAuth provider credentials in Supabase
+- Verify redirect URLs are correct
 - Check browser console for errors
 
-### User Can See Other Clients' Data
+### Wrong Role Assigned
+- Check user metadata in Supabase Dashboard
+- Verify Edge Function (if using) is working
+- Manually update user metadata if needed
+
+### Client Portal User Sees Other Clients' Data
 - RLS policies not applied correctly
-- Check that user metadata has correct `client` value
-- Verify migration `20250110000000_client_isolation_policies.sql` was applied
+- Check migration was run
+- Verify user metadata has correct `client` value
 
-## Security Notes
+## Security Best Practices
 
-1. **Never trust client-side role checks alone** - RLS policies enforce security at the database level
-2. **Admin users** should use the internal hub, not the portal
-3. **Client users** are automatically restricted by RLS policies
-4. **User metadata** can be updated by admins, but RLS policies prevent unauthorized access
-
-## Environment Variables
-
-Both apps need:
-```
-VITE_SUPABASE_URL=https://[your-project].supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
-The same Supabase project can be used for both apps since RLS policies handle the separation.
+1. **Never trust client-side checks alone** - RLS policies enforce security
+2. **Use different redirect URLs** for each app
+3. **Validate roles on both frontend and backend**
+4. **Regularly audit user roles and client assignments**
+5. **Use Edge Functions for automatic role assignment** to prevent mistakes
