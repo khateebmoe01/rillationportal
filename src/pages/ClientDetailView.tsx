@@ -1,0 +1,366 @@
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Settings, FileText } from 'lucide-react'
+import MetricCard from '../components/ui/MetricCard'
+import ClickableMetricCard from '../components/ui/ClickableMetricCard'
+import TrendChart from '../components/charts/TrendChart'
+import CampaignBreakdownTable from '../components/ui/CampaignBreakdownTable'
+import ConfigureTargetsModal from '../components/ui/ConfigureTargetsModal'
+import IterationLogModal from '../components/ui/IterationLogModal'
+import { useQuickViewData } from '../hooks/useQuickViewData'
+import { useCampaignStats } from '../hooks/useCampaignStats'
+import { useFirmographicInsights } from '../hooks/useFirmographicInsights'
+import { useIterationLog } from '../hooks/useIterationLog'
+import { useFilters } from '../contexts/FilterContext'
+import { useAI } from '../contexts/AIContext'
+import { supabase } from '../lib/supabase'
+import FirmographicInsightsPanel from '../components/insights/FirmographicInsightsPanel'
+import CampaignFilter from '../components/ui/CampaignFilter'
+import MeetingsDrillDown from '../components/ui/MeetingsDrillDown'
+
+type ChartMetric = 'sent' | 'prospects' | 'replied' | 'positiveReplies' | 'meetings' | null
+
+export default function ClientDetailView() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { dateRange, selectedClient } = useFilters()
+
+  // AI Context
+  const { setFirmographicData, setIterationLogs } = useAI()
+  
+  // State
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([])
+  const [tableCampaignSelection, setTableCampaignSelection] = useState<string[]>([])
+  const [selectedChartMetric, setSelectedChartMetric] = useState<ChartMetric>(null)
+  const [showConfigureTargets, setShowConfigureTargets] = useState(false)
+  const [showMeetingsDrillDown, setShowMeetingsDrillDown] = useState(false)
+  const [showIterationLog, setShowIterationLog] = useState(false)
+  
+  // Fetch iteration logs for AI context
+  const { logs: iterationLogs } = useIterationLog({ client: selectedClient || undefined })
+
+  // Handle URL parameter to open iteration log modal (e.g., from Slack link)
+  useEffect(() => {
+    if (searchParams.get('showIterationLog') === 'true') {
+      setShowIterationLog(true)
+      // Remove the parameter from URL after opening
+      searchParams.delete('showIterationLog')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
+
+  // Combined campaigns for filtering (from both campaign filter and table selection)
+  const effectiveCampaignFilter = tableCampaignSelection.length > 0 
+    ? tableCampaignSelection 
+    : selectedCampaigns.length > 0 
+      ? selectedCampaigns 
+      : undefined
+
+  // Fetch data - pass selectedCampaigns to filter
+  const { metrics, chartData, loading, error } = useQuickViewData({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+    client: selectedClient || undefined,
+    campaigns: selectedCampaigns.length > 0 ? selectedCampaigns : undefined,
+  })
+
+  const [targets, setTargets] = useState<{
+    emailsTarget: number
+    prospectsTarget: number
+    repliesTarget: number
+    meetingsTarget: number
+  } | null>(null)
+
+  useEffect(() => {
+    async function fetchTargets() {
+      if (!selectedClient) return
+      try {
+        const { data } = await supabase
+          .from('client_targets')
+          .select('emails_per_day, prospects_per_day, replies_per_day, meetings_per_day')
+          .eq('client', selectedClient)
+          .single()
+
+        type TargetData = {
+          emails_per_day: number | null
+          prospects_per_day: number | null
+          replies_per_day: number | null
+          meetings_per_day: number | null
+        }
+        const targetData = data as TargetData | null
+
+        if (targetData) {
+          const numDays = Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          setTargets({
+            emailsTarget: (targetData.emails_per_day || 0) * numDays,
+            prospectsTarget: (targetData.prospects_per_day || 0) * numDays,
+            repliesTarget: (targetData.replies_per_day || 0) * numDays,
+            meetingsTarget: (targetData.meetings_per_day || 0) * numDays,
+          })
+        }
+      } catch (err) {
+        console.error('Error fetching targets:', err)
+      }
+    }
+    fetchTargets()
+  }, [selectedClient, dateRange])
+
+  const { campaigns: campaignStats } = useCampaignStats({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+    client: selectedClient || undefined,
+    page: 1,
+    pageSize: 100,
+  })
+
+  const { data: firmographicData, loading: firmographicLoading, error: firmographicError } = useFirmographicInsights({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+    client: selectedClient || undefined,
+    campaigns: effectiveCampaignFilter,
+  })
+
+  // Sync firmographic data with AI context
+  useEffect(() => {
+    setFirmographicData(firmographicData)
+  }, [firmographicData, setFirmographicData])
+
+  // Sync iteration logs with AI context
+  useEffect(() => {
+    setIterationLogs(iterationLogs)
+  }, [iterationLogs, setIterationLogs])
+
+  // Get client-specific campaigns from campaignStats
+  const clientCampaigns = campaignStats.map(c => c.campaign_name).filter(Boolean) as string[]
+
+  // Helper to get target color
+  const getTargetColor = (actual: number, target: number): string => {
+    if (target === 0) return 'text-white'
+    const percentage = (actual / target) * 100
+    if (percentage >= 100) return 'text-green-400'
+    if (percentage >= 50) return 'text-yellow-400'
+    return 'text-red-400'
+  }
+
+
+  // Handle chart metric click
+  const handleChartMetricClick = (metric: ChartMetric) => {
+    setSelectedChartMetric(prev => prev === metric ? null : metric)
+  }
+
+  // Calculate percentages - reply rates are based on contacted prospects (uniqueProspects)
+  // This gives accurate conversion rates for the selected month
+  const replyRate = metrics && metrics.uniqueProspects > 0 ? (metrics.totalReplies / metrics.uniqueProspects) * 100 : 0
+  const realReplyRate = metrics && metrics.uniqueProspects > 0 ? (metrics.realReplies / metrics.uniqueProspects) * 100 : 0
+  const positiveRate = metrics && metrics.realReplies > 0 ? (metrics.positiveReplies / metrics.realReplies) * 100 : 0
+  const bounceRate = metrics && metrics.totalEmailsSent > 0 ? (metrics.bounces / metrics.totalEmailsSent) * 100 : 0
+  const meetingRate = metrics && metrics.positiveReplies > 0 ? (metrics.meetingsBooked / metrics.positiveReplies) * 100 : 0
+
+  if (!selectedClient) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <motion.div
+      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Header - Client filter prominently placed top-left */}
+      <div className="space-y-4">
+        {/* Top row - Client filter left, campaign filter right */}
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-white">{selectedClient}</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <CampaignFilter
+              campaigns={clientCampaigns}
+              selectedCampaigns={selectedCampaigns}
+              onChange={setSelectedCampaigns}
+            />
+            <button
+              onClick={() => setShowIterationLog(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/80 border border-emerald-500/50 rounded-lg text-xs text-white hover:bg-emerald-500/80 transition-colors"
+            >
+              <FileText size={14} />
+              Iteration Log
+            </button>
+            <button
+              onClick={() => setShowConfigureTargets(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-xs text-white hover:bg-slate-600/50 transition-colors"
+            >
+              <Settings size={14} />
+              Configure Targets
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Main Content */}
+      {!loading && metrics && (
+        <div className="space-y-6">
+          {/* Metrics Grid - Clickable to control chart */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            <ClickableMetricCard
+              title="Emails Sent"
+              value={metrics.totalEmailsSent}
+              colorClass={targets ? getTargetColor(metrics.totalEmailsSent, targets.emailsTarget) : 'text-white'}
+              isActive={selectedChartMetric === 'sent'}
+              onClick={() => handleChartMetricClick('sent')}
+            />
+            <ClickableMetricCard
+              title="Prospects"
+              value={metrics.uniqueProspects}
+              colorClass={targets ? getTargetColor(metrics.uniqueProspects, targets.prospectsTarget) : 'text-white'}
+              isActive={selectedChartMetric === 'prospects'}
+              onClick={() => handleChartMetricClick('prospects')}
+            />
+            <MetricCard
+              title="Total Replies"
+              value={metrics.totalReplies}
+              percentage={replyRate}
+              percentageLabel="incl. OOO"
+              colorClass={targets ? getTargetColor(metrics.totalReplies, targets.repliesTarget) : 'text-white'}
+            />
+            <ClickableMetricCard
+              title="Real Replies"
+              value={metrics.realReplies}
+              percentage={realReplyRate}
+              percentageLabel="excl. OOO"
+              colorClass={targets ? getTargetColor(metrics.realReplies, targets.repliesTarget) : 'text-white'}
+              isActive={selectedChartMetric === 'replied'}
+              onClick={() => handleChartMetricClick('replied')}
+            />
+            <ClickableMetricCard
+              title="Interested"
+              value={metrics.positiveReplies}
+              percentage={positiveRate}
+              colorClass="text-green-400"
+              isActive={selectedChartMetric === 'positiveReplies'}
+              onClick={() => handleChartMetricClick('positiveReplies')}
+            />
+            <MetricCard
+              title="Bounces"
+              value={metrics.bounces}
+              percentage={bounceRate}
+              colorClass="text-red-400"
+            />
+            <ClickableMetricCard
+              title="Meetings"
+              value={metrics.meetingsBooked}
+              percentage={meetingRate}
+              colorClass={targets ? getTargetColor(metrics.meetingsBooked, targets.meetingsTarget) : 'text-white'}
+              isActive={selectedChartMetric === 'meetings' || showMeetingsDrillDown}
+              onClick={() => {
+                handleChartMetricClick('meetings')
+                setShowMeetingsDrillDown(prev => !prev)
+              }}
+            />
+          </div>
+
+          {/* Meetings Drill-Down Panel */}
+          <MeetingsDrillDown
+            isOpen={showMeetingsDrillDown}
+            onClose={() => setShowMeetingsDrillDown(false)}
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            client={selectedClient}
+            campaignIds={tableCampaignSelection.length > 0 ? tableCampaignSelection : undefined}
+          />
+
+          {/* Trend Chart */}
+          <TrendChart 
+            data={chartData} 
+            selectedMetric={selectedChartMetric}
+            targets={targets || undefined}
+            metrics={metrics}
+          />
+
+          {/* Campaign Performance Table - Moved above Firmographic per Ziad's request */}
+          <CampaignBreakdownTable 
+            client={selectedClient} 
+            onCampaignsSelected={setTableCampaignSelection}
+          />
+
+          {/* Selection notice for firmographic filter */}
+          {tableCampaignSelection.length > 0 && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-violet-900/20 border border-violet-500/30 rounded-lg text-sm">
+              <span className="text-violet-300">
+                Deep Insights below filtered by {tableCampaignSelection.length} selected campaign{tableCampaignSelection.length > 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+
+          {/* Deep Insights (formerly Firmographic Analysis) */}
+          <FirmographicInsightsPanel
+            data={firmographicData}
+            loading={firmographicLoading}
+            error={firmographicError}
+          />
+        </div>
+      )}
+
+      {/* Configure Targets Modal */}
+      <ConfigureTargetsModal
+        isOpen={showConfigureTargets}
+        client={selectedClient}
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        mode="targets"
+        onClose={() => setShowConfigureTargets(false)}
+        onSave={() => {
+          setShowConfigureTargets(false)
+          // Refetch targets after save
+          const fetchTargets = async () => {
+            try {
+              const { data } = await supabase
+                .from('client_targets')
+                .select('emails_per_day, prospects_per_day, replies_per_day, meetings_per_day')
+                .eq('client', selectedClient)
+                .single()
+              if (data) {
+                const numDays = Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                setTargets({
+                  emailsTarget: ((data as any).emails_per_day || 0) * numDays,
+                  prospectsTarget: ((data as any).prospects_per_day || 0) * numDays,
+                  repliesTarget: ((data as any).replies_per_day || 0) * numDays,
+                  meetingsTarget: ((data as any).meetings_per_day || 0) * numDays,
+                })
+              }
+            } catch (err) {
+              console.error('Error refetching targets:', err)
+            }
+          }
+          fetchTargets()
+        }}
+      />
+
+      {/* Iteration Log Modal */}
+      <IterationLogModal
+        isOpen={showIterationLog}
+        onClose={() => setShowIterationLog(false)}
+        client={selectedClient}
+      />
+    </motion.div>
+  )
+}

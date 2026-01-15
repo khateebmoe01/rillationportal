@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Sidebar from './Sidebar'
 import Header from './Header'
+import TabNavigation from './TabNavigation'
 import AICopilotPanel from '../insights/AICopilotPanel'
 import { useAI } from '../../contexts/AIContext'
 
@@ -14,6 +15,7 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const { isPanelOpen, panelWidth } = useAI()
   const isCRMPage = location.pathname.startsWith('/crm')
+  const isReportingPage = location.pathname.startsWith('/performance') || location.pathname.startsWith('/pipeline')
   
   return (
     <div className="min-h-screen flex overflow-hidden">
@@ -37,6 +39,9 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Header - Hide for CRM (has its own header) */}
         {!isCRMPage && <Header />}
+
+        {/* Tabs + filters for reporting */}
+        {isReportingPage && <TabNavigation />}
         
         {/* Page Content */}
         <main className={`flex-1 ${isCRMPage ? 'overflow-hidden p-0' : 'overflow-auto p-6'}`}>

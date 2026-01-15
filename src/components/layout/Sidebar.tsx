@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Sparkles, Users, LogOut } from 'lucide-react'
+import { BarChart3, Sparkles, Users, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -10,6 +10,12 @@ const sections = [
     icon: Users,
     label: 'CRM',
     path: '/crm',
+  },
+  {
+    id: 'reporting',
+    icon: BarChart3,
+    label: 'Analytics',
+    path: '/performance',
   },
   {
     id: 'insights',
@@ -42,9 +48,11 @@ export default function Sidebar() {
           const Icon = section.icon
           const isActive = section.id === 'crm'
             ? location.pathname.startsWith('/crm')
-            : section.id === 'insights'
-              ? location.pathname.startsWith('/deep-insights') || location.pathname.startsWith('/insights')
-              : false
+            : section.id === 'reporting'
+              ? location.pathname.startsWith('/performance') || location.pathname.startsWith('/pipeline')
+              : section.id === 'insights'
+                ? location.pathname.startsWith('/deep-insights') || location.pathname.startsWith('/insights')
+                : false
           
           return (
             <NavLink

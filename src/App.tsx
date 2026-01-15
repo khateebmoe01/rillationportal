@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Layout from './components/layout/Layout'
 import ConfigError from './components/ui/ConfigError'
 import CRMView from './pages/CRMView'
+import ClientDetailView from './pages/ClientDetailView'
 import DeepView from './pages/DeepView'
+import PipelineView from './pages/PipelineView'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import ProtectedRoute from './components/auth/ProtectedRoute'
@@ -47,7 +49,9 @@ function App() {
               <Layout>
                 <AnimatePresence mode="wait">
                   <Routes location={location} key={location.pathname}>
-                    <Route path="/" element={<Navigate to="/crm" replace />} />
+                    <Route path="/" element={<Navigate to="/performance" replace />} />
+                    <Route path="/performance" element={<PageTransition><ClientDetailView /></PageTransition>} />
+                    <Route path="/pipeline" element={<PageTransition><PipelineView /></PageTransition>} />
                     <Route path="/crm" element={<PageTransition><CRMView /></PageTransition>} />
                     <Route path="/deep-insights" element={<PageTransition><DeepView /></PageTransition>} />
                     <Route path="/insights" element={<Navigate to="/deep-insights" replace />} />
