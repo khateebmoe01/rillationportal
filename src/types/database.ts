@@ -160,3 +160,59 @@ export interface CampaignReporting {
   interested_percentage: number
   created_at?: string
 }
+
+// Aggregated Data Types for Dashboard
+
+export interface QuickViewMetrics {
+  totalEmailsSent: number
+  uniqueProspects: number
+  totalReplies: number
+  realReplies: number
+  positiveReplies: number
+  bounces: number
+  meetingsBooked: number
+}
+
+export interface ClientBubbleData {
+  client: string
+  emailsSent: number
+  emailsTarget: number
+  uniqueProspects: number
+  prospectsTarget: number
+  realReplies: number
+  repliesTarget: number
+  meetings: number
+  meetingsTarget: number
+}
+
+export interface ChartDataPoint {
+  date: string
+  sent: number
+  prospects: number
+  replied: number
+  positiveReplies: number
+  meetings: number
+}
+
+export interface FunnelStage {
+  name: string
+  value: number
+  percentage?: number
+}
+
+export interface FunnelForecast {
+  id?: number
+  month: number
+  year: number
+  metric_key: string
+  estimate_low: number
+  estimate_avg: number
+  estimate_high: number
+  estimate_1: number
+  estimate_2: number
+  actual: number
+  projected: number
+  client?: string
+  created_at?: string
+  updated_at?: string
+}

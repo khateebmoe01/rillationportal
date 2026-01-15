@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { Loader2 } from 'lucide-react'
 
