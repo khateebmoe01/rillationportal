@@ -133,7 +133,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
   
   const [chartContext, setChartContext] = useState<ChartContext | null>(null)
   const [firmographicData, setFirmographicData] = useState<FirmographicInsightsData | null>(null)
-  const [dashboardData, setDashboardData] = useState<AIDataContext | null>(null)
+  const [dashboardData] = useState<AIDataContext | null>(null)
   const [iterationLogs, setIterationLogs] = useState<IterationLogEntry[]>([])
   const [screenshots, setScreenshots] = useState<ScreenshotContext[]>([])
   const [isAsking, setIsAsking] = useState(false)
