@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Settings, FileText } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import MetricCard from '../components/ui/MetricCard'
 import ClickableMetricCard from '../components/ui/ClickableMetricCard'
 import TrendChart from '../components/charts/TrendChart'
@@ -184,13 +184,6 @@ export default function ClientDetailView() {
               selectedCampaigns={selectedCampaigns}
               onChange={setSelectedCampaigns}
             />
-            <button
-              onClick={() => setShowIterationLog(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/80 border border-emerald-500/50 rounded-lg text-xs text-white hover:bg-emerald-500/80 transition-colors"
-            >
-              <FileText size={14} />
-              Iteration Log
-            </button>
             <button
               onClick={() => setShowConfigureTargets(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/50 border border-slate-600/50 rounded-lg text-xs text-white hover:bg-slate-600/50 transition-colors"

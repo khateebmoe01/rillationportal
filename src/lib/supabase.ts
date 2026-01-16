@@ -4,10 +4,13 @@ import type { Database } from '../types/database'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Create a client even if env vars are missing (will fail gracefully in components)
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient<Database>(supabaseUrl, supabaseAnonKey)
-  : createClient<Database>('', '') // Empty client that will fail gracefully
+// Create client with valid or placeholder values
+// The placeholder values prevent Supabase from throwing errors during initialization
+// Actual usage should check isSupabaseConfigured() first
+const url = supabaseUrl?.trim() || 'https://placeholder.supabase.co'
+const key = supabaseAnonKey?.trim() || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDUxOTIwMDAsImV4cCI6MTk2MDc2ODAwMH0.placeholder'
+
+export const supabase = createClient<Database>(url, key)
 
 // Export a function to check if env vars are configured
 export function isSupabaseConfigured(): boolean {

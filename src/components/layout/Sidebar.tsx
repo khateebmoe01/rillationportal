@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { BarChart3, Sparkles, Users, LogOut } from 'lucide-react'
+import { BarChart3, Users, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -17,12 +17,13 @@ const sections = [
     label: 'Analytics',
     path: '/performance',
   },
-  {
-    id: 'insights',
-    icon: Sparkles,
-    label: 'Deep Insights',
-    path: '/deep-insights',
-  },
+  // Deep Insights hidden for now
+  // {
+  //   id: 'insights',
+  //   icon: Sparkles,
+  //   label: 'Deep Insights',
+  //   path: '/deep-insights',
+  // },
 ]
 
 export default function Sidebar() {
