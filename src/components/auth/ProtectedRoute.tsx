@@ -61,23 +61,5 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
-  // Portal only allows "Rillation Revenue" client users
-  if (client !== 'Rillation Revenue') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-rillation-bg">
-        <div className="max-w-md w-full bg-rillation-card rounded-lg shadow-lg p-8 border border-rillation-border">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-rillation-text mb-2">
-              Access Restricted
-            </h1>
-            <p className="text-rillation-text-muted">
-              This portal is restricted to Rillation Revenue users only. Your account is associated with "{client}".
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return <>{children}</>
 }
