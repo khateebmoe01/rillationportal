@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { BarChart3, Sparkles, Users, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
@@ -27,11 +27,13 @@ const sections = [
 
 export default function Sidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(false)
   const { signOut, user } = useAuth()
   
   const handleSignOut = async () => {
     await signOut()
+    navigate('/login', { replace: true })
   }
   
   return (

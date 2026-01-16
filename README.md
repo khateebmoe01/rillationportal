@@ -30,14 +30,24 @@ A client-facing dashboard with CRM and Deep Insights functionality, built with R
    ```bash
    npm install
    ```
+   
+   Note: Dependencies are already installed in this project.
 
 2. **Set up environment variables:**
    
    Create a `.env` file in the root directory:
+   ```bash
+   touch .env
+   ```
+   
+   Add the following content to `.env`:
    ```
    VITE_SUPABASE_URL=your-supabase-url
    VITE_SUPABASE_ANON_KEY=your-anon-key
    ```
+   
+   Replace `your-supabase-url` and `your-anon-key` with your actual Supabase project credentials.
+   You can find these in your Supabase project settings under API.
 
 3. **Run database migrations:**
    
@@ -72,9 +82,16 @@ A client-facing dashboard with CRM and Deep Insights functionality, built with R
    npm run dev
    ```
 
-6. **Open your browser:**
+6. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
    
-   Navigate to `http://localhost:3000`
+   The server will start on `http://localhost:3421` (as configured in `vite.config.ts`).
+
+7. **Open your browser:**
+   
+   Navigate to `http://localhost:3421`
 
 ## Authentication & Data Isolation
 
