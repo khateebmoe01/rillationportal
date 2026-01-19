@@ -597,7 +597,7 @@ function DraggableColumnHeader({ column, sort, onSortChange, width, onResize, is
       <div
         ref={setNodeRef}
         style={style}
-        className={`group flex-shrink-0 flex items-center justify-center py-3 cursor-pointer bg-slate-900 hover:bg-slate-700/50 transition-colors overflow-hidden ${isDragging ? 'bg-slate-700/50 rounded' : ''}`}
+        className={`group flex-shrink-0 flex items-center justify-center h-full cursor-pointer bg-slate-900 hover:bg-slate-700/50 transition-colors overflow-hidden ${isDragging ? 'bg-slate-700/50 rounded' : ''}`}
         onClick={handleDoubleClick}
         title={`Expand ${column.label}`}
       >
@@ -610,7 +610,7 @@ function DraggableColumnHeader({ column, sort, onSortChange, width, onResize, is
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex-shrink-0 text-left px-3 py-3 text-xs font-medium text-white tracking-wide whitespace-nowrap flex items-center gap-1 relative bg-slate-900 overflow-hidden ${isDragging ? 'bg-slate-700/50 rounded' : ''}`}
+      className={`group flex-shrink-0 text-left px-3 h-full text-xs font-medium text-white tracking-wide whitespace-nowrap flex items-center gap-1 relative bg-slate-900 overflow-hidden ${isDragging ? 'bg-slate-700/50 rounded' : ''}`}
       onDoubleClick={handleDoubleClick}
       title={column.key !== 'full_name' ? 'Double-click to minimize' : undefined}
     >
@@ -1210,10 +1210,10 @@ export default function ContactsTable({
     <div className="h-full min-h-0 bg-slate-800 rounded-xl border border-slate-700/50 overflow-auto">
       {/* Sticky Header - stays at top when scrolling vertically */}
       <div 
-        className="sticky top-0 z-30 border-b border-slate-700/50 flex bg-slate-900"
+        className="sticky top-0 z-30 border-b border-slate-700/50 flex bg-slate-900 h-12"
       >
         {/* Column Picker Button */}
-        <div className="flex-shrink-0 px-2 py-2 flex items-center border-r border-slate-700/50 relative">
+        <div className="flex-shrink-0 px-2 flex items-center border-r border-slate-700/50 relative">
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowColumnPicker(!showColumnPicker)}
