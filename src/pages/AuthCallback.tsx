@@ -1,15 +1,20 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Loader2 } from 'lucide-react'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Handle the OAuth callback
+        // Check if this is a recovery/password reset flow
+        const hashParams = new URLSearchParams(location.hash.substring(1))
+        const type = hashParams.get('type')
+        
+        // Handle the auth callback
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -19,6 +24,12 @@ export default function AuthCallback() {
         }
 
         if (session?.user) {
+          // If this is a recovery flow, redirect to set password page
+          if (type === 'recovery') {
+            navigate('/set-password')
+            return
+          }
+
           // Check if user has required metadata for portal access
           const role = session.user.user_metadata?.role || 'client'
           const client = session.user.user_metadata?.client
@@ -41,7 +52,7 @@ export default function AuthCallback() {
     }
 
     handleAuthCallback()
-  }, [navigate])
+  }, [navigate, location])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-rillation-bg">
