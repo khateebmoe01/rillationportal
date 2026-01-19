@@ -97,6 +97,8 @@ interface PipelineProgressCellProps {
 const PipelineProgressCell = memo(({ contact, onSave }: PipelineProgressCellProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isSaving, setIsSaving] = useState<string | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 })
 
   // Find the deepest (latest) stage that is checked
   let deepestStage: typeof PIPELINE_STAGES[number] | null = null
@@ -120,10 +122,22 @@ const PipelineProgressCell = memo(({ contact, onSave }: PipelineProgressCellProp
     setIsSaving(null)
   }
 
+  const handleOpen = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setDropdownPos({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2 - 144, // Center the 288px dropdown
+      })
+    }
+    setIsOpen(!isOpen)
+  }
+
   return (
     <div className="relative flex justify-center" onClick={(e) => e.stopPropagation()}>
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleOpen}
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${
           deepestStage 
             ? `${deepestStage.bgColor} ${deepestStage.textColor}` 
@@ -148,7 +162,7 @@ const PipelineProgressCell = memo(({ contact, onSave }: PipelineProgressCellProp
         {isOpen && (
           <>
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-[100]"
               onClick={() => setIsOpen(false)}
             />
             <motion.div
@@ -156,7 +170,8 @@ const PipelineProgressCell = memo(({ contact, onSave }: PipelineProgressCellProp
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 z-50"
+              className="fixed w-72 z-[101]"
+              style={{ top: dropdownPos.top, left: dropdownPos.left }}
             >
               <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl overflow-hidden">
                 <div className="px-3 py-2 border-b border-slate-700/50">
