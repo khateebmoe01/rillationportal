@@ -27,7 +27,7 @@ const sections = [
 export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { signOut, user } = useAuth()
+  const { signOut } = useAuth()
   
   const handleSignOut = async () => {
     await signOut()
@@ -69,19 +69,17 @@ export default function Sidebar() {
       </div>
       
       {/* Sign Out Button */}
-      {user && (
-        <div className="mt-auto pt-2 border-t border-rillation-border/50">
-          <button
-            onClick={handleSignOut}
-            className="mx-2 h-12 w-[calc(100%-16px)] flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
-          >
-            <LogOut size={22} className="flex-shrink-0" />
-            <span className="text-sm font-medium whitespace-nowrap">
-              Sign Out
-            </span>
-          </button>
-        </div>
-      )}
+      <div className="mt-auto pt-2 border-t border-rillation-border/50">
+        <button
+          onClick={handleSignOut}
+          className="mx-2 h-12 w-[calc(100%-16px)] flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
+        >
+          <LogOut size={22} className="flex-shrink-0" />
+          <span className="text-sm font-medium whitespace-nowrap">
+            Sign Out
+          </span>
+        </button>
+      </div>
     </aside>
   )
 }
