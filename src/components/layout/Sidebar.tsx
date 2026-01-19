@@ -1,7 +1,5 @@
-import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { BarChart3, Users, LogOut } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 
 const sections = [
@@ -29,7 +27,6 @@ const sections = [
 export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [isExpanded, setIsExpanded] = useState(false)
   const { signOut, user } = useAuth()
   
   const handleSignOut = async () => {
@@ -38,14 +35,7 @@ export default function Sidebar() {
   }
   
   return (
-    <motion.aside
-      className="bg-rillation-card border-r border-rillation-border flex flex-col py-4 gap-2 overflow-hidden flex-shrink-0"
-      initial={false}
-      animate={{ width: isExpanded ? 180 : 64 }}
-      transition={{ duration: 0.1 }}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-    >
+    <aside className="w-44 bg-rillation-card border-r border-rillation-border flex flex-col py-4 gap-2 flex-shrink-0">
       <div className="flex-1 flex flex-col gap-2">
         {sections.map((section) => {
           const Icon = section.icon
@@ -70,17 +60,9 @@ export default function Sidebar() {
               `}
             >
               <Icon size={22} className="flex-shrink-0" />
-              <motion.span
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                initial={false}
-                animate={{ 
-                  opacity: isExpanded ? 1 : 0,
-                  width: isExpanded ? 'auto' : 0,
-                }}
-                transition={{ duration: 0.05 }}
-              >
+              <span className="text-sm font-medium whitespace-nowrap">
                 {section.label}
-              </motion.span>
+              </span>
             </NavLink>
           )
         })}
@@ -91,23 +73,15 @@ export default function Sidebar() {
         <div className="mt-auto pt-2 border-t border-rillation-border/50">
           <button
             onClick={handleSignOut}
-            className="mx-2 h-12 w-full flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
+            className="mx-2 h-12 w-[calc(100%-16px)] flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
           >
             <LogOut size={22} className="flex-shrink-0" />
-            <motion.span
-              className="text-sm font-medium whitespace-nowrap overflow-hidden"
-              initial={false}
-              animate={{ 
-                opacity: isExpanded ? 1 : 0,
-                width: isExpanded ? 'auto' : 0,
-              }}
-              transition={{ duration: 0.05 }}
-            >
+            <span className="text-sm font-medium whitespace-nowrap">
               Sign Out
-            </motion.span>
+            </span>
           </button>
         </div>
       )}
-    </motion.aside>
+    </aside>
   )
 }
