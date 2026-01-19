@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { BarChart3, Users, LogOut } from 'lucide-react'
+import { BarChart3, Users, LogOut, UserPlus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import InviteUserModal from '../ui/InviteUserModal'
 
 const sections = [
   {
@@ -27,7 +29,8 @@ const sections = [
 export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { signOut } = useAuth()
+  const { signOut, client } = useAuth()
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
   
   const handleSignOut = async () => {
     await signOut()
@@ -69,11 +72,25 @@ export default function Sidebar() {
         })}
       </div>
       
-      {/* Spacer to push Sign Out to bottom */}
+      {/* Spacer to push buttons to bottom */}
       <div className="flex-1" />
       
-      {/* Sign Out Button - Always at bottom */}
-      <div className="pt-2 border-t border-rillation-border/50">
+      {/* Bottom Actions */}
+      <div className="pt-2 border-t border-rillation-border/50 space-y-1">
+        {/* Invite User Button - Only show if user has a client */}
+        {client && (
+          <button
+            onClick={() => setIsInviteModalOpen(true)}
+            className="mx-2 h-12 w-[calc(100%-16px)] flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
+          >
+            <UserPlus size={22} className="flex-shrink-0" />
+            <span className="text-sm font-medium whitespace-nowrap">
+              Invite User
+            </span>
+          </button>
+        )}
+        
+        {/* Sign Out Button */}
         <button
           onClick={handleSignOut}
           className="mx-2 h-12 w-[calc(100%-16px)] flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
@@ -84,6 +101,12 @@ export default function Sidebar() {
           </span>
         </button>
       </div>
+      
+      {/* Invite User Modal */}
+      <InviteUserModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+      />
     </aside>
   )
 }
