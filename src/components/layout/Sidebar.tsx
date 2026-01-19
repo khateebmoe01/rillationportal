@@ -35,8 +35,9 @@ export default function Sidebar() {
   }
   
   return (
-    <aside className="w-44 bg-rillation-card border-r border-rillation-border flex flex-col py-4 gap-2 flex-shrink-0">
-      <div className="flex-1 flex flex-col gap-2">
+    <aside className="w-44 h-screen sticky top-0 bg-rillation-card border-r border-rillation-border flex flex-col py-4 flex-shrink-0">
+      {/* Navigation Links */}
+      <div className="flex flex-col gap-2">
         {sections.map((section) => {
           const Icon = section.icon
           const isActive = section.id === 'crm'
@@ -68,8 +69,11 @@ export default function Sidebar() {
         })}
       </div>
       
-      {/* Sign Out Button */}
-      <div className="mt-auto pt-2 border-t border-rillation-border/50">
+      {/* Spacer to push Sign Out to bottom */}
+      <div className="flex-1" />
+      
+      {/* Sign Out Button - Always at bottom */}
+      <div className="pt-2 border-t border-rillation-border/50">
         <button
           onClick={handleSignOut}
           className="mx-2 h-12 w-[calc(100%-16px)] flex items-center gap-3 rounded-xl transition-all duration-200 px-3 text-white/80 hover:text-white hover:bg-white/5"
