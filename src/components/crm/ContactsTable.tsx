@@ -1202,6 +1202,13 @@ export default function ContactsTable({
   const firstColumn = orderedColumns[0]
   const scrollableColumns = orderedColumns.slice(1)
   const firstColumnWidth = firstColumn ? (columnWidths[firstColumn.key] || DEFAULT_COLUMN_WIDTHS[firstColumn.key] || 176) : 176
+  
+  // Calculate total width of scrollable columns
+  const scrollableColumnsWidth = scrollableColumns.reduce((total, col) => {
+    const isMinimized = minimizedColumns.has(col.key)
+    const width = isMinimized ? MINIMIZED_WIDTH : (columnWidths[col.key] || DEFAULT_COLUMN_WIDTHS[col.key] || 128)
+    return total + width
+  }, 0)
 
   return (
     <div className="h-full min-h-0 bg-slate-800 rounded-xl border border-slate-700/50 overflow-auto">
@@ -1343,7 +1350,7 @@ export default function ContactsTable({
               items={scrollableColumns.map(c => c.key)}
               strategy={horizontalListSortingStrategy}
             >
-              <div className="flex" style={{ minWidth: '2400px' }}>
+              <div className="flex" style={{ width: `${scrollableColumnsWidth}px` }}>
                 {scrollableColumns.map((column) => (
                   <DraggableColumnHeader
                     key={column.key}
@@ -1417,7 +1424,7 @@ export default function ContactsTable({
                 )}
                 
                 {/* Scrollable columns cells */}
-                <div className="flex" style={{ minWidth: '2400px' }}>
+                <div className="flex" style={{ width: `${scrollableColumnsWidth}px` }}>
                   {scrollableColumns.map((column) => {
                     const isMinimized = minimizedColumns.has(column.key)
                     const width = isMinimized ? MINIMIZED_WIDTH : (columnWidths[column.key] || DEFAULT_COLUMN_WIDTHS[column.key] || 128)
