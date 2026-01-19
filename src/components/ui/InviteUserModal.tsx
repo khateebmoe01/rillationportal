@@ -68,13 +68,13 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50"
+            className="absolute inset-0 bg-black/60"
             onClick={handleClose}
           />
 
@@ -84,7 +84,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-rillation-card border border-rillation-border rounded-2xl z-50 overflow-hidden"
+            className="relative w-full max-w-md mx-4 bg-rillation-card border border-rillation-border rounded-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="px-6 py-4 border-b border-rillation-border flex items-center justify-between">
@@ -183,7 +183,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
               )}
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   )
