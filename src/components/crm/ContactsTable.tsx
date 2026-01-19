@@ -146,12 +146,10 @@ const PipelineProgressCell = memo(({ contact, onSave }: PipelineProgressCellProp
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        {deepestStage ? (
+        {deepestStage && (
           <span className="truncate max-w-[90px] font-medium">
             {deepestStage.label}
           </span>
-        ) : (
-          <span>—</span>
         )}
         <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
           <ChevronDown size={11} className="flex-shrink-0 opacity-70" />
@@ -327,7 +325,7 @@ const EditableCell = memo(({ value, contactId, field, onSave, rowIndex, totalRow
       }}
       className="cursor-text hover:bg-slate-700/50 px-2 py-1 -mx-2 -my-1 rounded transition-colors truncate block"
     >
-      {value || '-'}
+      {value}
     </span>
   )
 })
@@ -671,7 +669,7 @@ function LinkCell({ url, label }: { url?: string | null; label?: string }) {
 
 // Format date for display - full year
 function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return '-'
+  if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -811,7 +809,7 @@ const EstimatedValueCell = memo(({ contact, onSave }: EstimatedValueCellProps) =
   const [isSaving, setIsSaving] = useState(false)
 
   const formatCurrency = (value: number) => {
-    if (!value) return '-'
+    if (!value) return ''
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -953,7 +951,7 @@ function getCellValue(
       const contextValue = contact.context || ''
       return (
         <span className="text-slate-300 truncate block max-w-[180px]" title={contextValue}>
-          {contextValue || '-'}
+          {contextValue}
         </span>
       )
     
@@ -971,9 +969,7 @@ function getCellValue(
         <span className="text-xs px-2 py-1 bg-slate-700/50 rounded-full text-slate-300">
           {contact.lead_source}
         </span>
-      ) : (
-        <span className="text-slate-300">-</span>
-      )
+      ) : null
     
     case 'industry':
       return (
@@ -988,7 +984,7 @@ function getCellValue(
       )
     
     default:
-      return <span className="text-slate-400 truncate">-</span>
+      return null
   }
 }
 
