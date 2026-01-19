@@ -18,7 +18,7 @@ export default function Layout({ children }: LayoutProps) {
   const isReportingPage = location.pathname.startsWith('/performance') || location.pathname.startsWith('/pipeline')
   
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div className="min-h-screen">
       {/* Top border separator */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-rillation-border z-50" />
       
@@ -27,16 +27,16 @@ export default function Layout({ children }: LayoutProps) {
       
       {/* Spacer that expands when AI panel is open */}
       <motion.div
-        className="flex-shrink-0"
+        className="fixed left-44 top-0 bottom-0"
         animate={{ width: isPanelOpen ? panelWidth : 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       />
       
-      {/* Sidebar */}
+      {/* Sidebar - Fixed position */}
       <Sidebar />
       
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
+      {/* Main Content - Offset by sidebar width */}
+      <div className="ml-44 flex flex-col min-h-screen">
         {/* Header - Hide for CRM (has its own header) */}
         {!isCRMPage && <Header />}
 

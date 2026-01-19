@@ -35,7 +35,7 @@ export default function Sidebar() {
   }
   
   return (
-    <aside className="w-44 h-screen sticky top-0 bg-rillation-card border-r border-rillation-border flex flex-col py-4 flex-shrink-0">
+    <aside className="w-44 h-screen fixed left-0 top-0 bg-rillation-card border-r border-rillation-border flex flex-col py-4 z-40">
       {/* Navigation Links */}
       <div className="flex flex-col gap-2">
         {sections.map((section) => {
