@@ -323,14 +323,156 @@ const EditableCell = memo(({ value, contactId, field, onSave, rowIndex, totalRow
         e.stopPropagation()
         setIsEditing(true)
       }}
-      className="cursor-text hover:bg-slate-700/50 px-2 py-1 -mx-2 -my-1 rounded transition-colors truncate block"
+      className="group/cell cursor-text hover:bg-slate-700/50 px-2 py-1 -mx-2 -my-1 rounded transition-colors truncate block"
     >
-      {value}
+      {value ? (
+        value
+      ) : (
+        <>
+          <span className="text-slate-500 group-hover/cell:hidden">-</span>
+          <span className="hidden group-hover/cell:inline text-slate-400 text-xs">Enter text...</span>
+        </>
+      )}
     </span>
   )
 })
 
 EditableCell.displayName = 'EditableCell'
+
+// Phone-specific editable cell with phone icon hover
+interface PhoneEditableCellProps {
+  value: string
+  contactId: string
+  field: keyof CRMContact
+  onSave: (id: string, updates: Partial<CRMContact>) => Promise<boolean>
+  rowIndex: number
+  totalRows: number
+}
+
+const PhoneEditableCell = memo(({ value, contactId, field, onSave, rowIndex, totalRows }: PhoneEditableCellProps) => {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState(value)
+  const [isSaving, setIsSaving] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleSave = async (moveToNext = false) => {
+    if (editValue === value) {
+      setIsEditing(false)
+      if (moveToNext) focusNextRow()
+      return
+    }
+
+    setIsSaving(true)
+    const success = await onSave(contactId, { [field]: editValue })
+    setIsSaving(false)
+    
+    if (success) {
+      setIsEditing(false)
+      if (moveToNext) focusNextRow()
+    } else {
+      setEditValue(value)
+    }
+  }
+
+  const focusNextRow = () => {
+    if (rowIndex < totalRows - 1) {
+      setTimeout(() => {
+        const nextCell = document.querySelector(
+          `[data-editable-cell][data-row="${rowIndex + 1}"][data-field="${field}"]`
+        ) as HTMLElement
+        if (nextCell) {
+          nextCell.click()
+        }
+      }, 50)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditValue(value)
+    setIsEditing(false)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSave(true)
+    } else if (e.key === 'Escape') {
+      handleCancel()
+    }
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <input
+          ref={inputRef}
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => handleSave(false)}
+          autoFocus
+          className="w-full px-2 py-1 bg-slate-900 border border-slate-600 rounded text-sm text-white focus:outline-none"
+        />
+        {isSaving && <Loader2 size={14} className="animate-spin text-slate-300" />}
+      </div>
+    )
+  }
+
+  return (
+    <span
+      data-editable-cell
+      data-row={rowIndex}
+      data-field={field}
+      onClick={(e) => {
+        e.stopPropagation()
+        setIsEditing(true)
+      }}
+      className="group/phone cursor-text hover:bg-slate-700/50 px-2 py-1 -mx-2 -my-1 rounded transition-colors truncate block"
+    >
+      {value ? (
+        value
+      ) : (
+        <>
+          <span className="text-slate-500 group-hover/phone:hidden">-</span>
+          <span className="hidden group-hover/phone:inline-flex items-center gap-1 text-slate-400 text-xs">
+            <Phone size={12} />
+            Enter phone...
+          </span>
+        </>
+      )}
+    </span>
+  )
+})
+
+PhoneEditableCell.displayName = 'PhoneEditableCell'
+
+// Date cell with hover indicator
+interface DateCellProps {
+  dateStr?: string | null
+}
+
+function DateCell({ dateStr }: DateCellProps) {
+  if (!dateStr) {
+    return (
+      <span className="group/date cursor-default">
+        <span className="text-slate-500 group-hover/date:hidden">-</span>
+        <span className="hidden group-hover/date:inline-flex items-center gap-1 text-slate-400 text-xs">
+          <Calendar size={12} />
+          mm/dd/yyyy
+        </span>
+      </span>
+    )
+  }
+  
+  const formatted = new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  
+  return <span className="text-slate-300">{formatted}</span>
+}
 
 // Stage cell with dropdown
 interface StageCellProps {
@@ -646,9 +788,19 @@ function DraggableColumnHeader({ column, sort, onSortChange, width, onResize, is
   )
 }
 
-// Link cell component
+// Link cell component with hover indicator for empty state
 function LinkCell({ url, label }: { url?: string | null; label?: string }) {
-  if (!url) return <span className="text-slate-300">-</span>
+  if (!url) {
+    return (
+      <span className="group/link cursor-pointer">
+        <span className="text-slate-500 group-hover/link:hidden">-</span>
+        <span className="hidden group-hover/link:inline-flex items-center gap-1 text-slate-400 text-xs">
+          <ExternalLink size={12} />
+          Add link...
+        </span>
+      </span>
+    )
+  }
 
   const href = url.startsWith('http') ? url : `https://${url}`
   const displayText = label || (url.includes('linkedin') ? 'Profile' : new URL(href).hostname.replace('www.', ''))
@@ -870,11 +1022,18 @@ const EstimatedValueCell = memo(({ contact, onSave }: EstimatedValueCellProps) =
         setEditValue(String(value || ''))
         setIsEditing(true)
       }}
-      className={`cursor-text px-2 py-1 -mx-2 -my-1 rounded transition-none hover:bg-slate-700/50 ${
-        value > 0 ? 'text-green-400 font-medium' : 'text-slate-300'
+      className={`group/currency cursor-text px-2 py-1 -mx-2 -my-1 rounded transition-none hover:bg-slate-700/50 ${
+        value > 0 ? 'text-green-400 font-medium' : ''
       }`}
     >
-      {formatCurrency(value)}
+      {value > 0 ? (
+        formatCurrency(value)
+      ) : (
+        <>
+          <span className="text-slate-500 group-hover/currency:hidden">-</span>
+          <span className="hidden group-hover/currency:inline text-slate-400 text-xs">$0</span>
+        </>
+      )}
     </span>
   )
 })
@@ -937,7 +1096,7 @@ function getCellValue(
     case 'lead_phone':
     case 'company_phone':
       return (
-        <EditableCell
+        <PhoneEditableCell
           value={contact[key] || ''}
           contactId={contact.id}
           field={key}
@@ -950,16 +1109,23 @@ function getCellValue(
     case 'context':
       const contextValue = contact.context || ''
       return (
-        <span className="text-slate-300 truncate block max-w-[180px]" title={contextValue}>
-          {contextValue}
+        <span className="group/context truncate block max-w-[180px]" title={contextValue}>
+          {contextValue ? (
+            <span className="text-slate-300">{contextValue}</span>
+          ) : (
+            <>
+              <span className="text-slate-500 group-hover/context:hidden">-</span>
+              <span className="hidden group-hover/context:inline text-slate-400 text-xs">Enter notes...</span>
+            </>
+          )}
         </span>
       )
     
     case 'next_touchpoint':
-      return <span className="text-slate-300">{formatDate(contact.next_touchpoint)}</span>
+      return <DateCell dateStr={contact.next_touchpoint} />
     
     case 'created_at':
-      return <span className="text-slate-300">{formatDate(contact.created_at)}</span>
+      return <DateCell dateStr={contact.created_at} />
     
     case 'estimated_value':
       return <EstimatedValueCell contact={contact} onSave={onEstimatedValueUpdate} />
@@ -969,7 +1135,9 @@ function getCellValue(
         <span className="text-xs px-2 py-1 bg-slate-700/50 rounded-full text-slate-300">
           {contact.lead_source}
         </span>
-      ) : null
+      ) : (
+        <span className="text-slate-500">-</span>
+      )
     
     case 'industry':
       return (
