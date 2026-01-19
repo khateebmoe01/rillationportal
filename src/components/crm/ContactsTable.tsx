@@ -819,16 +819,6 @@ function LinkCell({ url, label }: { url?: string | null; label?: string }) {
   )
 }
 
-// Format date for display - full year
-function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
 // Row Quick Actions component
 interface RowQuickActionsProps {
   contact: CRMContact
