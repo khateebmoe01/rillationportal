@@ -44,6 +44,8 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
   }
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (!isEditing) {
       // Check if clicking on the link
       if ((e.target as HTMLElement).tagName === 'A') {
@@ -62,6 +64,7 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
+        onMouseDown={(e) => e.stopPropagation()}
         placeholder="https://..."
         className="w-full h-11 bg-[#1f1f1f] text-[#f0f0f0] text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
       />
@@ -73,7 +76,7 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
 
   return (
     <div
-      onClick={handleClick}
+      onMouseDown={handleClick}
       className="w-full h-11 px-3 py-2 text-[13px] cursor-text hover:bg-[#1a1a1a] flex items-center"
     >
       {hasUrl ? (
