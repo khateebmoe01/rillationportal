@@ -17,7 +17,7 @@ interface CRMHeaderProps {
   selectedCount?: number
 }
 
-// Filter Dropdown rendered in portal to prevent clipping
+// Filter Dropdown - renders menu in portal to prevent clipping
 function FilterDropdown({ 
   label, 
   value, 
@@ -36,9 +36,9 @@ function FilterDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 })
 
-  // Update position when opened
-  useEffect(() => {
-    if (isOpen && triggerRef.current) {
+  // Recalculate position on scroll/resize when open
+  const updatePosition = useCallback(() => {
+    if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
       setPosition({
         top: rect.bottom + 6,
@@ -46,37 +46,79 @@ function FilterDropdown({
         width: Math.max(rect.width, 180),
       })
     }
-  }, [isOpen])
+  }, [])
 
-  // Close on click outside
+  // Update position when opened and on scroll/resize
   useEffect(() => {
+    if (isOpen) {
+      updatePosition()
+      window.addEventListener('scroll', updatePosition, true)
+      window.addEventListener('resize', updatePosition)
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true)
+        window.removeEventListener('resize', updatePosition)
+      }
+    }
+  }, [isOpen, updatePosition])
+
+  // Close on click outside - use capture phase for reliability
+  useEffect(() => {
+    if (!isOpen) return
+
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node
-      if (triggerRef.current?.contains(target)) return
-      if (dropdownRef.current?.contains(target)) return
+      
+      // Check if click is on trigger
+      if (triggerRef.current?.contains(target)) {
+        return
+      }
+      
+      // Check if click is on dropdown
+      if (dropdownRef.current?.contains(target)) {
+        return
+      }
+      
       setIsOpen(false)
     }
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-      }, 0)
-      return () => {
-        clearTimeout(timer)
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
+
+    // Small delay to prevent the opening click from immediately closing
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside, true)
+    }, 10)
+
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('mousedown', handleClickOutside, true)
     }
   }, [isOpen])
 
   // Close on escape
   useEffect(() => {
+    if (!isOpen) return
+    
     function handleEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape') setIsOpen(false)
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+        triggerRef.current?.focus()
+      }
     }
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      return () => document.removeEventListener('keydown', handleEscape)
-    }
+    
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen])
+
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsOpen(prev => !prev)
+  }
+
+  const handleOptionClick = (optionValue: string | null) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onChange(optionValue)
+    setIsOpen(false)
+  }
 
   const displayValue = value 
     ? (colorMap?.[value]?.label || value) 
@@ -84,104 +126,166 @@ function FilterDropdown({
 
   const isActive = value !== null
 
-  const dropdown = isOpen ? createPortal(
-    <motion.div
+  // Render dropdown in portal
+  const dropdownContent = isOpen ? (
+    <div
       ref={dropdownRef}
-      initial={{ opacity: 0, y: -4, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -4, scale: 0.98 }}
-      transition={{ duration: 0.12, ease: 'easeOut' }}
       style={{
         position: 'fixed',
         top: position.top,
         left: position.left,
         minWidth: position.width,
-        zIndex: 9999,
-        boxShadow: shadows.dropdown,
+        zIndex: 99999,
+        pointerEvents: 'auto',
       }}
-      className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg py-1.5 max-h-[280px] overflow-y-auto"
     >
-      {/* All option */}
-      <div
-        onClick={() => { onChange(null); setIsOpen(false) }}
-        className={`px-3 py-2 cursor-pointer hover:bg-[#252525] flex items-center gap-2 transition-colors ${
-          !value ? 'text-[#3b82f6]' : 'text-[#d4d4d4]'
-        }`}
-        style={{ fontSize: typography.size.base }}
+      <motion.div
+        initial={{ opacity: 0, y: -4, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -4, scale: 0.98 }}
+        transition={{ duration: 0.12, ease: 'easeOut' }}
+        style={{
+          boxShadow: shadows.dropdown,
+          backgroundColor: '#1a1a1a',
+          border: '1px solid #2a2a2a',
+          borderRadius: 8,
+          overflow: 'hidden',
+        }}
       >
-        {!value && <Check size={14} className="text-[#3b82f6]" />}
-        {value && <span className="w-[14px]" />}
-        All {label}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-[#2a2a2a] my-1" />
-
-      {/* Options */}
-      {options.map((option) => {
-        const optColors = colorMap?.[option]
-        const optLabel = colorMap?.[option]?.label || option
-        const isSelected = value === option
-
-        return (
+        <div style={{ maxHeight: 280, overflowY: 'auto', padding: '6px 0' }}>
+          {/* All option */}
           <div
-            key={option}
-            onClick={() => { onChange(option); setIsOpen(false) }}
-            className={`px-3 py-2 cursor-pointer hover:bg-[#252525] flex items-center gap-2 transition-colors ${
-              isSelected ? 'bg-[#1f1f1f]' : ''
-            }`}
+            onClick={handleOptionClick(null)}
+            style={{
+              padding: '10px 14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: typography.size.base,
+              color: !value ? '#3b82f6' : '#d4d4d4',
+              backgroundColor: 'transparent',
+              transition: 'background-color 0.1s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            {isSelected && <Check size={14} className="text-[#3b82f6]" />}
-            {!isSelected && <span className="w-[14px]" />}
-            {optColors ? (
-              <span
-                className="inline-flex items-center px-2.5 py-1 rounded-full font-medium"
-                style={{ 
-                  backgroundColor: optColors.bg, 
-                  color: optColors.text,
-                  fontSize: typography.size.xs,
-                }}
-              >
-                {optLabel}
-              </span>
-            ) : (
-              <span style={{ fontSize: typography.size.base, color: colors.text.primary }}>
-                {optLabel}
-              </span>
-            )}
+            <span style={{ width: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {!value && <Check size={14} style={{ color: '#3b82f6' }} />}
+            </span>
+            All {label}
           </div>
-        )
-      })}
-    </motion.div>,
-    document.body
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid #2a2a2a', margin: '4px 0' }} />
+
+          {/* Options */}
+          {options.map((option) => {
+            const optColors = colorMap?.[option]
+            const optLabel = colorMap?.[option]?.label || option
+            const isSelected = value === option
+
+            return (
+              <div
+                key={option}
+                onClick={handleOptionClick(option)}
+                style={{
+                  padding: '10px 14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor: isSelected ? '#1f1f1f' : 'transparent',
+                  transition: 'background-color 0.1s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isSelected ? '#1f1f1f' : 'transparent'}
+              >
+                <span style={{ width: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isSelected && <Check size={14} style={{ color: '#3b82f6' }} />}
+                </span>
+                {optColors ? (
+                  <span
+                    style={{ 
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '4px 10px',
+                      borderRadius: 9999,
+                      fontWeight: 500,
+                      backgroundColor: optColors.bg, 
+                      color: optColors.text,
+                      fontSize: typography.size.xs,
+                    }}
+                  >
+                    {optLabel}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: typography.size.base, color: colors.text.primary }}>
+                    {optLabel}
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
+    </div>
   ) : null
 
   return (
-    <div className="relative">
+    <>
       <button
         ref={triggerRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`
-          flex items-center gap-2 px-3.5 py-2 rounded-lg border transition-all
-          ${isActive
-            ? 'bg-[#1a2a3a] border-[#3b82f6]/50 text-[#f5f5f5]'
-            : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#d4d4d4] hover:border-[#3a3a3a] hover:bg-[#1f1f1f]'
-          }
-        `}
+        type="button"
+        onClick={handleTriggerClick}
         style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '8px 14px',
+          borderRadius: 8,
+          border: `1px solid ${isActive ? 'rgba(59, 130, 246, 0.5)' : '#2a2a2a'}`,
+          backgroundColor: isActive ? '#1a2a3a' : '#1a1a1a',
+          color: isActive ? '#f5f5f5' : '#d4d4d4',
           fontSize: typography.size.base,
           minHeight: 40,
+          cursor: 'pointer',
+          transition: 'all 0.15s',
+          pointerEvents: 'auto',
+          position: 'relative',
+          zIndex: 1,
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.borderColor = '#3a3a3a'
+            e.currentTarget.style.backgroundColor = '#1f1f1f'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.borderColor = '#2a2a2a'
+            e.currentTarget.style.backgroundColor = '#1a1a1a'
+          }
         }}
       >
-        <span className="truncate max-w-[120px]">{displayValue}</span>
+        <span style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {displayValue}
+        </span>
         <ChevronDown 
           size={16} 
-          className={`transition-transform text-[#737373] ${isOpen ? 'rotate-180' : ''}`} 
+          style={{ 
+            color: '#737373',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.15s',
+          }}
         />
       </button>
 
-      <AnimatePresence>{dropdown}</AnimatePresence>
-    </div>
+      {/* Portal for dropdown */}
+      <AnimatePresence>
+        {dropdownContent && createPortal(dropdownContent, document.body)}
+      </AnimatePresence>
+    </>
   )
 }
 
@@ -231,35 +335,42 @@ export default function CRMHeader({
   const hasActiveFilters = filters.stage || filters.assignee || filters.lead_source
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="sticky top-0 z-30 border-b"
+    <div
       style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
         backgroundColor: colors.bg.elevated,
-        borderColor: colors.border.default,
+        borderBottom: `1px solid ${colors.border.default}`,
         height: layout.toolbarHeight,
       }}
     >
       <div 
-        className="flex items-center justify-between gap-6 h-full"
-        style={{ padding: `0 ${layout.toolbarHeight / 2}px` }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 24,
+          height: '100%',
+          padding: `0 ${layout.toolbarHeight / 2}px`,
+        }}
       >
         {/* Left side: Title and count */}
-        <div className="flex items-center gap-4">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h1 
-            className="font-semibold"
             style={{ 
               fontSize: typography.size.xl,
+              fontWeight: 600,
               color: colors.text.primary,
+              margin: 0,
             }}
           >
             CRM
           </h1>
           <span 
-            className="px-2.5 py-1 rounded-md"
             style={{ 
+              padding: '4px 10px',
+              borderRadius: 6,
               fontSize: typography.size.sm,
               color: selectedCount > 0 ? colors.accent.secondary : colors.text.muted,
               backgroundColor: selectedCount > 0 ? 'rgba(59, 130, 246, 0.15)' : colors.bg.surface,
@@ -274,20 +385,25 @@ export default function CRMHeader({
         </div>
 
         {/* Right side: Search, filters, add */}
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Search */}
-          <div className="relative">
+          <div style={{ position: 'relative' }}>
             <Search 
               size={18} 
-              className="absolute left-3.5 top-1/2 -translate-y-1/2"
-              style={{ color: colors.text.placeholder }}
+              style={{ 
+                position: 'absolute',
+                left: 14,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: colors.text.placeholder,
+                pointerEvents: 'none',
+              }}
             />
             <input
               type="text"
               value={localSearch}
               onChange={handleSearchChange}
               placeholder="Search leads..."
-              className="rounded-lg border transition-all focus:outline-none"
               style={{
                 width: 260,
                 paddingLeft: 42,
@@ -295,9 +411,11 @@ export default function CRMHeader({
                 paddingTop: 10,
                 paddingBottom: 10,
                 backgroundColor: colors.bg.surface,
-                borderColor: colors.border.default,
+                border: `1px solid ${colors.border.default}`,
+                borderRadius: 8,
                 fontSize: typography.size.base,
                 color: colors.text.primary,
+                outline: 'none',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = colors.border.focus
@@ -310,9 +428,22 @@ export default function CRMHeader({
             />
             {localSearch && (
               <button
+                type="button"
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#2a2a2a] transition-colors"
-                style={{ color: colors.text.muted }}
+                style={{
+                  position: 'absolute',
+                  right: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  padding: 4,
+                  borderRadius: 4,
+                  border: 'none',
+                  background: 'transparent',
+                  color: colors.text.muted,
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <X size={14} />
               </button>
@@ -347,12 +478,21 @@ export default function CRMHeader({
           <AnimatePresence>
             {hasActiveFilters && (
               <motion.button
+                type="button"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 onClick={() => onFiltersChange({})}
-                className="text-[#a3a3a3] hover:text-[#f5f5f5] transition-colors px-2 py-1"
-                style={{ fontSize: typography.size.sm }}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: typography.size.sm,
+                  color: '#a3a3a3',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#f5f5f5'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#a3a3a3'}
               >
                 Clear
               </motion.button>
@@ -361,29 +501,30 @@ export default function CRMHeader({
 
           {/* Add button */}
           <button
+            type="button"
             onClick={onAddClick}
-            className="flex items-center gap-2 font-medium rounded-lg transition-all hover:shadow-lg"
             style={{
-              paddingLeft: 16,
-              paddingRight: 16,
-              paddingTop: 10,
-              paddingBottom: 10,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: 'none',
               backgroundColor: colors.accent.primary,
               color: '#ffffff',
               fontSize: typography.size.base,
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'background-color 0.15s',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.accent.primaryHover
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.accent.primary
-            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.accent.primaryHover}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.accent.primary}
           >
             <Plus size={18} strokeWidth={2.5} />
             Add Lead
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
