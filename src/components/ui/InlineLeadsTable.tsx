@@ -348,7 +348,7 @@ export default function InlineLeadsTable({
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <table className="w-full min-w-[640px]">
@@ -399,7 +399,7 @@ export default function InlineLeadsTable({
                       {lead.email || '-'}
                     </td>
                     <td className="px-2 sm:px-4 py-3 text-sm">
-                      <span className="px-2 py-1 bg-rillation-purple/20 text-rillation-purple rounded text-xs whitespace-nowrap">
+                      <span className="px-2 py-1 bg-rillation-green/20 text-rillation-green rounded text-xs whitespace-nowrap">
                         {lead.current_stage || '-'}
                       </span>
                     </td>
@@ -424,11 +424,11 @@ export default function InlineLeadsTable({
                             onFocus={handleFocus}
                             placeholder="0"
                             disabled={savingValue === index}
-                            className="w-28 sm:w-36 md:w-40 px-2 sm:px-3 py-1.5 sm:py-2 bg-rillation-card border border-rillation-border rounded-lg text-xs sm:text-sm text-rillation-text focus:outline-none focus:border-rillation-purple disabled:opacity-50"
+                            className="w-28 sm:w-36 md:w-40 px-2 sm:px-3 py-1.5 sm:py-2 bg-rillation-card border border-rillation-border rounded-lg text-xs sm:text-sm text-rillation-text focus:outline-none focus:border-rillation-green disabled:opacity-50"
                           />
                           {savingValue === index && (
                             <div className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2">
-                              <Loader2 size={12} className="sm:w-3.5 sm:h-3.5 animate-spin text-rillation-purple" />
+                              <Loader2 size={12} className="sm:w-3.5 sm:h-3.5 animate-spin text-rillation-green" />
                             </div>
                           )}
                         </div>

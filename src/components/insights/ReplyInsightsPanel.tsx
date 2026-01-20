@@ -343,14 +343,14 @@ export default function ReplyInsightsPanel({
                             <span className="text-xs text-rillation-text-muted">
                               {campaign.totalReplies} replies
                             </span>
-                            <span className="text-sm font-bold text-rillation-purple">
+                            <span className="text-sm font-bold text-rillation-green">
                               {campaign.positiveRate.toFixed(1)}%
                             </span>
                           </div>
                         </div>
                         <div className="h-2 bg-rillation-bg rounded-full overflow-hidden">
                           <motion.div
-                            className="h-full rounded-full bg-gradient-to-r from-rillation-purple to-rillation-magenta"
+                            className="h-full rounded-full bg-gradient-to-r from-rillation-green to-rillation-magenta"
                             initial={{ width: 0 }}
                             animate={{ width: `${campaign.positiveRate}%` }}
                             transition={{ duration: 0.8, delay: 0.2 + index * 0.05 }}

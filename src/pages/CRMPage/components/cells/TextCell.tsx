@@ -42,7 +42,9 @@ export default function TextCell({ value, onChange }: TextCellProps) {
     }
   }
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     setIsEditing(true)
   }
 
@@ -55,15 +57,16 @@ export default function TextCell({ value, onChange }: TextCellProps) {
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className="w-full h-full bg-[#1f1f1f] text-[#f0f0f0] text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-inset rounded-none border-none"
+        onMouseDown={(e) => e.stopPropagation()}
+        className="w-full h-11 bg-[#1f1f1f] text-[#f0f0f0] text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
       />
     )
   }
 
   return (
     <div
-      onClick={handleClick}
-      className="w-full h-full px-3 py-2 text-[13px] text-[#f0f0f0] truncate cursor-text hover:bg-[#1a1a1a]"
+      onMouseDown={handleClick}
+      className="w-full h-11 px-3 py-2 text-[13px] text-[#f0f0f0] truncate cursor-text hover:bg-[#1a1a1a] flex items-center"
     >
       {value || <span className="text-[#888888]">-</span>}
     </div>

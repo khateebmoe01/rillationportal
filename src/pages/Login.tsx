@@ -63,7 +63,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-purple focus:border-transparent"
+                className="w-full px-4 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-green focus:border-transparent"
                 placeholder="you@example.com"
                 disabled={loading}
               />
@@ -83,7 +83,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-2 pr-10 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-purple focus:border-transparent"
+                  className="w-full px-4 py-2 pr-10 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-green focus:border-transparent"
                   placeholder="••••••••"
                   disabled={loading}
                 />
@@ -101,7 +101,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-rillation-purple hover:bg-rillation-purple/90 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-rillation-green hover:bg-rillation-green/90 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

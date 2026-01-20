@@ -104,7 +104,7 @@ export default function FunnelChart({
                     relative py-2 sm:py-2.5 flex items-center justify-center transition-all duration-200 rounded-lg
                     ${isGreenStage 
                       ? 'bg-gradient-to-r from-green-600 to-green-500' 
-                      : 'bg-gradient-to-r from-rillation-purple-dark to-rillation-purple'
+                      : 'bg-gradient-to-r from-rillation-green-dark to-rillation-green'
                     }
                     ${isClickable ? 'cursor-pointer' : ''}
                     ${isSelected ? 'ring-2 ring-rillation-magenta ring-offset-2 ring-offset-rillation-card' : ''}

@@ -7,6 +7,7 @@ import CRMPage from './pages/CRMPage'
 import ClientDetailView from './pages/ClientDetailView'
 import DeepView from './pages/DeepView'
 import PipelineView from './pages/PipelineView'
+import SettingsPage from './pages/SettingsPage'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import SetPassword from './pages/SetPassword'
@@ -74,6 +75,7 @@ function App() {
                     <Route path="/crm" element={<PageTransition><CRMPage /></PageTransition>} />
                     <Route path="/deep-insights" element={<PageTransition><DeepView /></PageTransition>} />
                     <Route path="/insights" element={<Navigate to="/deep-insights" replace />} />
+                    <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
                   </Routes>
                 </AnimatePresence>
               </Layout>

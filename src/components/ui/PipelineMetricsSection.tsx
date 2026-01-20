@@ -35,7 +35,7 @@ interface PipelineMetricsSectionProps {
 type PipelineMetric = 'meetingsBooked' | 'showedUp' | 'qualified' | 'demo' | 'proposalSent' | 'closed' | null
 
 const METRIC_CONFIG = {
-  meetingsBooked: { label: 'Meetings Booked', color: '#a855f7' },
+  meetingsBooked: { label: 'Meetings Booked', color: '#006B3F' },
   showedUp: { label: 'Showed Up', color: '#6366f1' },
   qualified: { label: 'Qualified', color: '#3b82f6' },
   demo: { label: 'Demo Completed', color: '#06b6d4' },
@@ -113,7 +113,7 @@ export default function PipelineMetricsSection({
         <ClickableMetricCard
           title="Meetings Booked"
           value={metrics.meetingsBooked}
-          colorClass="text-purple-400"
+          colorClass="text-emerald-500"
           isActive={selectedMetric === 'meetingsBooked'}
           onClick={() => handleMetricClick('meetingsBooked')}
         />
@@ -205,7 +205,7 @@ export default function PipelineMetricsSection({
                   />
                 ) : (
                   <>
-                    <Line type="monotone" dataKey="meetingsBooked" name="Meetings" stroke="#a855f7" strokeWidth={2} dot={false} activeDot={{ r: 3 }} animationDuration={800} />
+                    <Line type="monotone" dataKey="meetingsBooked" name="Meetings" stroke="#006B3F" strokeWidth={2} dot={false} activeDot={{ r: 3 }} animationDuration={800} />
                     <Line type="monotone" dataKey="showedUp" name="Showed Up" stroke="#6366f1" strokeWidth={1.5} dot={false} animationDuration={800} />
                     <Line type="monotone" dataKey="qualified" name="Qualified" stroke="#3b82f6" strokeWidth={1.5} dot={false} animationDuration={800} />
                     <Line type="monotone" dataKey="demo" name="Demo" stroke="#06b6d4" strokeWidth={1.5} dot={false} animationDuration={800} />
@@ -228,7 +228,7 @@ export default function PipelineMetricsSection({
           ) : (
             <>
               <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#a855f7' }} />
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#006B3F' }} />
                 <span className="text-white">Meetings</span>
               </div>
               <div className="flex items-center gap-1.5">

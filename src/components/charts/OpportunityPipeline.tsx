@@ -35,7 +35,7 @@ export default function OpportunityPipeline({
       <div className="bg-rillation-card rounded-xl p-6 border border-rillation-border w-full">
         <h3 className="text-lg font-semibold text-rillation-text mb-6">Current Pipeline Value</h3>
         <div className="flex items-center justify-center py-8">
-          <div className="w-6 h-6 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     )
@@ -110,7 +110,7 @@ export default function OpportunityPipeline({
         {onSetEstimatedValue && (
           <button
             onClick={onSetEstimatedValue}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-rillation-purple hover:bg-rillation-purple/80 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-rillation-green hover:bg-rillation-green/80 rounded-lg transition-colors"
           >
             <Settings size={12} />
             <span className="hidden sm:inline">Set Values</span>

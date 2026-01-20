@@ -190,7 +190,11 @@ export default function CRMPage() {
         selectedCount={selectedIds.size}
       />
 
-      <div className="px-4">
+      {/* Spacer between header and table */}
+      <div className="h-4 bg-[#0d0d0d]" />
+
+      <div className="px-4 pt-2">
+        <div className="bg-[#111111] rounded-t-lg border border-[#1f1f1f] border-b-0 overflow-hidden">
         <CRMTable
           leads={leads}
           loading={loading}
@@ -204,6 +208,7 @@ export default function CRMPage() {
           onRowClick={handleRowClick}
         />
 
+        </div>
         {/* Add row button at bottom of table */}
         {!loading && leads.length > 0 && (
           <AddRowButton onClick={handleAdd} />

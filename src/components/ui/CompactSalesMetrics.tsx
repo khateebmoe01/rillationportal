@@ -37,9 +37,9 @@ const METRIC_CONFIG = {
   avgValue: {
     title: 'Avg Deal Value',
     icon: Target,
-    color: '#a855f7',
-    gradient: 'from-purple-500/20 to-purple-500/5',
-    borderColor: 'border-purple-500/30',
+    color: '#006B3F',
+    gradient: 'from-emerald-700/20 to-emerald-700/5',
+    borderColor: 'border-emerald-700/30',
     dataKey: 'avgValue',
     formatter: formatCurrency,
   },

@@ -1,6 +1,8 @@
+import { useState, useCallback, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { COLUMNS } from '../config/columns'
 import CRMRow from './CRMRow'
+import ResizableColumnHeader from './ResizableColumnHeader'
 import type { Lead } from '../types'
 
 interface CRMTableProps {
@@ -17,7 +19,7 @@ interface CRMTableProps {
 }
 
 // Skeleton row component
-function SkeletonRow() {
+function SkeletonRow({ columnWidths }: { columnWidths: Record<string, number> }) {
   return (
     <tr className="border-b border-[#1f1f1f]" style={{ height: '44px' }}>
       <td className="p-0 w-10">
@@ -32,7 +34,7 @@ function SkeletonRow() {
       {COLUMNS.map((column) => (
         <td
           key={column.id}
-          style={{ width: column.width, minWidth: column.width }}
+          style={{ width: columnWidths[column.id], minWidth: columnWidths[column.id] }}
           className="p-0"
         >
           <div className="px-3 py-2">
@@ -40,7 +42,7 @@ function SkeletonRow() {
               className="h-4 bg-[#1f1f1f] rounded"
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              style={{ width: Math.min(column.width - 24, 100) }}
+              style={{ width: Math.min(columnWidths[column.id] - 24, 100) }}
             />
           </div>
         </td>
@@ -62,8 +64,27 @@ export default function CRMTable({
   onToggleSelectAll,
   onRowClick,
 }: CRMTableProps) {
+  // Initialize column widths from COLUMNS config
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    const widths: Record<string, number> = {}
+    COLUMNS.forEach((col) => {
+      widths[col.id] = col.width
+    })
+    return widths
+  })
+
+  // Handle column resize
+  const handleColumnResize = useCallback((columnId: string) => (newWidth: number) => {
+    setColumnWidths((prev) => ({
+      ...prev,
+      [columnId]: newWidth,
+    }))
+  }, [])
+
   // Calculate total width (+40 for checkbox, +40 for delete column)
-  const totalWidth = COLUMNS.reduce((sum, col) => sum + col.width, 0) + 80
+  const totalWidth = useMemo(() => {
+    return Object.values(columnWidths).reduce((sum, w) => sum + w, 0) + 80
+  }, [columnWidths])
 
   const allSelected = leads.length > 0 && selectedIds.size === leads.length
   const someSelected = selectedIds.size > 0 && selectedIds.size < leads.length
@@ -95,7 +116,12 @@ export default function CRMTable({
         <thead>
           <tr className="bg-[#161616] border-b border-[#2a2a2a]" style={{ height: '36px' }}>
             {/* Checkbox header */}
-            <th className="w-10 px-3">
+            <ResizableColumnHeader
+              label=""
+              width={40}
+              onResize={() => {}}
+              isCheckbox
+            >
               <input
                 type="checkbox"
                 checked={allSelected}
@@ -103,18 +129,21 @@ export default function CRMTable({
                   if (el) el.indeterminate = someSelected
                 }}
                 onChange={onToggleSelectAll}
-                className="w-4 h-4 rounded border-[#3a3a3a] bg-[#1f1f1f] text-blue-500 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                className="w-4 h-4 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
               />
-            </th>
+            </ResizableColumnHeader>
+            
             {COLUMNS.map((column) => (
-              <th
+              <ResizableColumnHeader
                 key={column.id}
-                style={{ width: column.width, minWidth: column.width, maxWidth: column.width }}
-                className="text-left px-3 py-2 text-[12px] font-medium text-[#f0f0f0] uppercase tracking-wider"
-              >
-                {column.label}
-              </th>
+                label={column.label}
+                width={columnWidths[column.id]}
+                onResize={handleColumnResize(column.id)}
+                minWidth={60}
+                maxWidth={500}
+              />
             ))}
+            
             <th className="w-10" /> {/* Delete column header */}
           </tr>
         </thead>
@@ -125,7 +154,7 @@ export default function CRMTable({
           {loading && leads.length === 0 && (
             <>
               {[...Array(5)].map((_, i) => (
-                <SkeletonRow key={i} />
+                <SkeletonRow key={i} columnWidths={columnWidths} />
               ))}
             </>
           )}
@@ -154,6 +183,7 @@ export default function CRMTable({
                 isSelected={selectedIds.has(lead.id)}
                 onToggleSelect={onToggleSelect}
                 onRowClick={onRowClick}
+                columnWidths={columnWidths}
               />
             ))}
           </AnimatePresence>

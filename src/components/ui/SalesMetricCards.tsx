@@ -20,7 +20,7 @@ export default function SalesMetricCards({ summary }: SalesMetricCardsProps) {
       value: summary.avgDealValue,
       formatter: formatCurrency,
       icon: <Target size={18} />,
-      colorClass: 'text-rillation-purple',
+      colorClass: 'text-rillation-green',
     },
     {
       title: 'Win Rate',

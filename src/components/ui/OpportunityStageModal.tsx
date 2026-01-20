@@ -313,7 +313,7 @@ export default function OpportunityStageModal({
             </div>
             <div>
               <span className="text-rillation-text-muted">Total Stage Value: </span>
-              <span className="font-semibold text-rillation-purple">{formatCurrency(totalValue)}</span>
+              <span className="font-semibold text-rillation-green">{formatCurrency(totalValue)}</span>
             </div>
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function OpportunityStageModal({
         <div className="p-4 md:p-6 overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
             </div>
           ) : leads.length === 0 ? (
             <div className="text-center py-12 text-rillation-text-muted">
@@ -377,7 +377,7 @@ export default function OpportunityStageModal({
                             onChange={(e) => handleValueChange(index, e.target.value)}
                             onFocus={handleFocus}
                             placeholder="0"
-                            className="w-28 sm:w-36 md:w-40 px-2 sm:px-3 py-1.5 sm:py-2 bg-rillation-card border border-rillation-border rounded-lg text-xs sm:text-sm text-rillation-text focus:outline-none focus:border-rillation-purple"
+                            className="w-28 sm:w-36 md:w-40 px-2 sm:px-3 py-1.5 sm:py-2 bg-rillation-card border border-rillation-border rounded-lg text-xs sm:text-sm text-rillation-text focus:outline-none focus:border-rillation-green"
                           />
                           {lead.opportunityId && (
                             <button

@@ -61,7 +61,7 @@ export default function EngagedLeadsPanel({
         <div className="bg-rillation-card border border-rillation-border rounded-lg p-3 shadow-xl">
           <p className="text-sm font-semibold text-rillation-text">{data.name}</p>
           <p className="text-sm text-rillation-text-muted mt-1">
-            <span className="text-rillation-purple font-bold">{data.count.toLocaleString()}</span> leads ({data.percentage.toFixed(1)}%)
+            <span className="text-rillation-green font-bold">{data.count.toLocaleString()}</span> leads ({data.percentage.toFixed(1)}%)
           </p>
         </div>
       )
@@ -84,13 +84,13 @@ export default function EngagedLeadsPanel({
       {/* Header */}
       <div className="p-5 border-b border-rillation-border/50 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-rillation-purple/20 to-rillation-magenta/20 border border-rillation-purple/30">
-            <Users size={24} className="text-rillation-purple" />
+          <div className="p-3 rounded-xl bg-gradient-to-br from-rillation-green/20 to-rillation-magenta/20 border border-rillation-green/30">
+            <Users size={24} className="text-rillation-green" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-rillation-text">Engaged Leads</h3>
             <p className="text-sm text-rillation-text-muted mt-0.5">
-              <span className="text-rillation-purple font-semibold">{totalLeads.toLocaleString()}</span> leads from {leadsByClient.length} clients
+              <span className="text-rillation-green font-semibold">{totalLeads.toLocaleString()}</span> leads from {leadsByClient.length} clients
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function EngagedLeadsPanel({
             transition={{ delay: 0.4 }}
           >
             <p className="text-xs text-rillation-text-muted uppercase tracking-wide mb-1">Top Client</p>
-            <p className="text-lg font-bold text-rillation-purple truncate">
+            <p className="text-lg font-bold text-rillation-green truncate">
               {topClient?.client || '-'}
             </p>
             {topClient && (

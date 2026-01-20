@@ -166,7 +166,7 @@ export default function ClientDetailModal({
         <div className="p-6 space-y-6">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-8 h-8 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
             <>
@@ -268,7 +268,7 @@ export default function ClientDetailModal({
                       value={emailsPerDay || ''}
                       onChange={(e) => setEmailsPerDay(parseInt(e.target.value) || 0)}
                       onFocus={handleFocus}
-                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-purple"
+                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-green"
                     />
                   </div>
                   <div>
@@ -280,7 +280,7 @@ export default function ClientDetailModal({
                       value={prospectsPerDay || ''}
                       onChange={(e) => setProspectsPerDay(parseInt(e.target.value) || 0)}
                       onFocus={handleFocus}
-                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-purple"
+                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-green"
                     />
                   </div>
                   <div>
@@ -292,7 +292,7 @@ export default function ClientDetailModal({
                       value={repliesPerDay || ''}
                       onChange={(e) => setRepliesPerDay(parseInt(e.target.value) || 0)}
                       onFocus={handleFocus}
-                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-purple"
+                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-green"
                     />
                   </div>
                   <div>
@@ -304,7 +304,7 @@ export default function ClientDetailModal({
                       value={meetingsPerDay || ''}
                       onChange={(e) => setMeetingsPerDay(parseInt(e.target.value) || 0)}
                       onFocus={handleFocus}
-                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-purple"
+                      className="w-full px-3 py-2 bg-rillation-bg border border-rillation-border rounded-lg text-sm text-rillation-text focus:outline-none focus:border-rillation-green"
                     />
                   </div>
                 </div>

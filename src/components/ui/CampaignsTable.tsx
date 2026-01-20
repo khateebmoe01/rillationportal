@@ -73,9 +73,9 @@ export default function CampaignsTable({
       return <ArrowUpDown size={14} className="ml-1 text-rillation-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
     }
     if (sortDirection === 'asc') {
-      return <ArrowUp size={14} className="ml-1 text-rillation-purple" />
+      return <ArrowUp size={14} className="ml-1 text-rillation-green" />
     }
-    return <ArrowDown size={14} className="ml-1 text-rillation-purple" />
+    return <ArrowDown size={14} className="ml-1 text-rillation-green" />
   }
 
   const totalPages = Math.ceil(totalCount / pageSize)
@@ -85,7 +85,7 @@ export default function CampaignsTable({
   if (loading && campaigns.length === 0) {
     return (
       <div className="bg-rillation-card rounded-xl border border-rillation-border p-8 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -108,7 +108,7 @@ export default function CampaignsTable({
               <th className="px-4 py-3 text-left text-xs font-medium text-rillation-text-muted uppercase tracking-wider w-12">
                 <input
                   type="checkbox"
-                  className="rounded border-rillation-border text-rillation-purple focus:ring-rillation-purple"
+                  className="rounded border-rillation-border text-rillation-green focus:ring-rillation-green"
                   onChange={() => {}}
                 />
               </th>
@@ -195,7 +195,7 @@ export default function CampaignsTable({
                   onClick={() => onRowClick(campaign)}
                   className={`border-b border-rillation-border/30 transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-rillation-purple/10 hover:bg-rillation-purple/15'
+                      ? 'bg-rillation-green/10 hover:bg-rillation-green/15'
                       : 'hover:bg-rillation-card-hover'
                   }`}
                 >
@@ -204,7 +204,7 @@ export default function CampaignsTable({
                       type="checkbox"
                       checked={isSelected}
                       readOnly
-                      className="rounded border-rillation-border text-rillation-purple focus:ring-rillation-purple cursor-pointer"
+                      className="rounded border-rillation-border text-rillation-green focus:ring-rillation-green cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </td>
@@ -275,7 +275,7 @@ export default function CampaignsTable({
                     disabled={loading}
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                       currentPage === pageNum
-                        ? 'bg-rillation-purple text-white'
+                        ? 'bg-rillation-green text-white'
                         : 'text-rillation-text-muted hover:bg-rillation-card-hover'
                     }`}
                   >

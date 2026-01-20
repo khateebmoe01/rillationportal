@@ -239,7 +239,7 @@ export default function LeadsModal({
         <div className="overflow-auto max-h-[60vh]">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
             <table className="w-full">
@@ -281,7 +281,7 @@ export default function LeadsModal({
                       {lead.email || '-'}
                     </td>
                     <td className="px-4 py-3 text-sm text-rillation-text">
-                      <span className="px-2 py-1 bg-rillation-purple/20 text-rillation-purple rounded text-xs">
+                      <span className="px-2 py-1 bg-rillation-green/20 text-rillation-green rounded text-xs">
                         {lead.current_stage}
                       </span>
                     </td>
@@ -336,7 +336,7 @@ export default function LeadsModal({
                     onClick={() => setCurrentPage(pageNum)}
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === pageNum
-                        ? 'bg-rillation-purple text-white'
+                        ? 'bg-rillation-green text-white'
                         : 'text-rillation-text-muted hover:bg-rillation-card-hover'
                     }`}
                   >

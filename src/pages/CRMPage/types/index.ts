@@ -64,6 +64,7 @@ export interface Lead {
   date_created: string | null
   created_at: string | null
   updated_at: string | null
+  deleted_at: string | null // Soft delete timestamp
   
   // Additional firmographic
   tech_stack: string[] | null

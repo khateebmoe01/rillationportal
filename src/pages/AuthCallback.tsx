@@ -64,7 +64,7 @@ export default function AuthCallback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-rillation-bg">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-rillation-purple" />
+        <Loader2 className="w-8 h-8 animate-spin text-rillation-green" />
         <p className="text-rillation-text-muted">Completing sign in...</p>
       </div>
     </div>

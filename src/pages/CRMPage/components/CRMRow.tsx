@@ -11,6 +11,7 @@ import DateCell from './cells/DateCell'
 import CurrencyCell from './cells/CurrencyCell'
 import PhoneCell from './cells/PhoneCell'
 import UrlCell from './cells/UrlCell'
+import PipelineProgressCell from './cells/PipelineProgressCell'
 
 interface CRMRowProps {
   lead: Lead
@@ -20,6 +21,7 @@ interface CRMRowProps {
   isSelected: boolean
   onToggleSelect: (id: string) => void
   onRowClick?: (lead: Lead) => void
+  columnWidths?: Record<string, number>
 }
 
 const rowVariants = {
@@ -28,7 +30,7 @@ const rowVariants = {
   exit: { opacity: 0, x: -10 },
 }
 
-function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, onRowClick }: CRMRowProps) {
+function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, onRowClick, columnWidths }: CRMRowProps) {
   const handleUpdate = (field: keyof Lead) => (value: unknown) => {
     onUpdate(lead.id, field, value)
   }
@@ -50,16 +52,31 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
     }
   }
 
-  const renderCell = (columnId: keyof Lead, type: string, options?: string[]) => {
-    const value = lead[columnId]
-    const colorMap = getColorMap(columnId)
+  // Handle pipeline updates (multiple fields at once)
+  const handlePipelineUpdate = (field: keyof Lead, value: unknown) => {
+    onUpdate(lead.id, field, value)
+  }
+
+  const renderCell = (columnId: keyof Lead | 'pipeline_progress', type: string, options?: string[]) => {
+    // Special case for pipeline progress (composite column)
+    if (type === 'pipeline') {
+      return (
+        <PipelineProgressCell
+          lead={lead}
+          onUpdate={handlePipelineUpdate}
+        />
+      )
+    }
+
+    const value = lead[columnId as keyof Lead]
+    const colorMap = getColorMap(columnId as keyof Lead)
 
     switch (type) {
       case 'text':
         return (
           <TextCell
             value={value as string | null}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
           />
         )
       case 'select':
@@ -67,7 +84,7 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
           <SelectCell
             value={value as string | null}
             options={options || []}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
             colorMap={colorMap}
           />
         )
@@ -75,35 +92,35 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
         return (
           <DateCell
             value={value as string | null}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
           />
         )
       case 'currency':
         return (
           <CurrencyCell
             value={value as number | null}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
           />
         )
       case 'phone':
         return (
           <PhoneCell
             value={value as string | null}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
           />
         )
       case 'url':
         return (
           <UrlCell
             value={value as string | null}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
           />
         )
       default:
         return (
           <TextCell
             value={value as string | null}
-            onChange={handleUpdate(columnId)}
+            onChange={handleUpdate(columnId as keyof Lead)}
           />
         )
     }
@@ -131,20 +148,23 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
             type="checkbox"
             checked={isSelected}
             onChange={() => {}}
-            className="w-4 h-4 rounded border-[#3a3a3a] bg-[#1f1f1f] text-blue-500 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+            className="w-4 h-4 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
           />
         </div>
       </td>
 
-      {COLUMNS.map((column) => (
-        <td
-          key={column.id}
-          style={{ width: column.width, minWidth: column.width, maxWidth: column.width }}
-          className="p-0 overflow-hidden"
-        >
-          {renderCell(column.id, column.type, column.options)}
-        </td>
-      ))}
+      {COLUMNS.map((column) => {
+        const width = columnWidths?.[column.id] ?? column.width
+        return (
+          <td
+            key={column.id}
+            style={{ width, minWidth: width, maxWidth: width }}
+            className="p-0 overflow-hidden"
+          >
+            {renderCell(column.id, column.type, column.options)}
+          </td>
+        )
+      })}
       
       {/* Delete action column */}
       <td className="p-0 w-10">

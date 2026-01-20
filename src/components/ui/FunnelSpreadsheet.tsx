@@ -77,7 +77,7 @@ export default function FunnelSpreadsheet({ data, month, year }: FunnelSpreadshe
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-gradient-to-r from-rillation-purple to-rillation-magenta">
+            <tr className="bg-gradient-to-r from-rillation-green to-rillation-magenta">
               <th className="px-2 py-1.5 text-left text-xs font-medium text-white min-w-[120px]">
                 Metric
               </th>
@@ -87,19 +87,19 @@ export default function FunnelSpreadsheet({ data, month, year }: FunnelSpreadshe
             </tr>
             <tr className="bg-rillation-card-hover">
               <th className="px-2 py-1 text-left text-[10px] font-medium text-rillation-text-muted"></th>
-              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-purple min-w-[60px]">
+              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-green min-w-[60px]">
                 Low
               </th>
-              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-purple min-w-[60px]">
+              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-green min-w-[60px]">
                 Avg
               </th>
               <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-magenta min-w-[60px]">
                 High
               </th>
-              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-purple min-w-[60px]">
+              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-green min-w-[60px]">
                 Est 1
               </th>
-              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-purple min-w-[60px]">
+              <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-green min-w-[60px]">
                 Est 2
               </th>
               <th className="px-2 py-1 text-center text-[10px] font-medium text-rillation-text min-w-[60px]">

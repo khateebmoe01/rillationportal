@@ -223,7 +223,7 @@ export default function CampaignDetailModal({
         <div className="flex-1 overflow-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
             <div className="space-y-6">

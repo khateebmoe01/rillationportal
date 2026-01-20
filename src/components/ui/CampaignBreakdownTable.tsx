@@ -314,7 +314,7 @@ export default function CampaignBreakdownTable({ client, onCampaignsSelected }: 
   if (loading) {
     return (
       <div className="bg-rillation-card rounded-xl border border-rillation-border p-8 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

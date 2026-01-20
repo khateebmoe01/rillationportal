@@ -72,7 +72,7 @@ export default function SetPassword() {
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-rillation-bg">
-        <Loader2 className="w-8 h-8 animate-spin text-rillation-purple" />
+        <Loader2 className="w-8 h-8 animate-spin text-rillation-green" />
       </div>
     )
   }
@@ -96,8 +96,8 @@ export default function SetPassword() {
           ) : (
             <>
               <div className="text-center mb-6">
-                <div className="w-12 h-12 rounded-xl bg-rillation-purple/20 flex items-center justify-center mx-auto mb-4">
-                  <Lock size={24} className="text-rillation-purple" />
+                <div className="w-12 h-12 rounded-xl bg-rillation-green/20 flex items-center justify-center mx-auto mb-4">
+                  <Lock size={24} className="text-rillation-green" />
                 </div>
                 <h1 className="text-2xl font-bold text-rillation-text">
                   Set Your Password
@@ -129,7 +129,7 @@ export default function SetPassword() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="w-full pl-10 pr-10 py-2.5 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-purple focus:border-transparent"
+                      className="w-full pl-10 pr-10 py-2.5 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-green focus:border-transparent"
                       placeholder="At least 8 characters"
                       disabled={loading}
                     />
@@ -158,7 +158,7 @@ export default function SetPassword() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="w-full pl-10 pr-4 py-2.5 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-purple focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2.5 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-green focus:border-transparent"
                       placeholder="Confirm your password"
                       disabled={loading}
                     />
@@ -168,7 +168,7 @@ export default function SetPassword() {
                 <button
                   type="submit"
                   disabled={loading || !password || !confirmPassword}
-                  className="w-full bg-rillation-purple hover:bg-rillation-purple/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-rillation-green hover:bg-rillation-green/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

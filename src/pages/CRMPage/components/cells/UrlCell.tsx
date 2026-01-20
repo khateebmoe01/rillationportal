@@ -63,7 +63,7 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         placeholder="https://..."
-        className="w-full h-full bg-[#1f1f1f] text-[#f0f0f0] text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[#3b82f6] focus:ring-inset rounded-none border-none"
+        className="w-full h-11 bg-[#1f1f1f] text-[#f0f0f0] text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
       />
     )
   }
@@ -74,7 +74,7 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
   return (
     <div
       onClick={handleClick}
-      className="w-full h-full px-3 py-2 text-[13px] cursor-text hover:bg-[#1a1a1a]"
+      className="w-full h-11 px-3 py-2 text-[13px] cursor-text hover:bg-[#1a1a1a] flex items-center"
     >
       {hasUrl ? (
         <a

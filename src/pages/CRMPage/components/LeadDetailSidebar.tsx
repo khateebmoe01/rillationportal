@@ -58,7 +58,7 @@ export default function LeadDetailSidebar({ lead, isOpen, onClose }: LeadDetailS
     'new': 'bg-blue-500/20 text-blue-400',
     'contacted': 'bg-yellow-500/20 text-yellow-400',
     'qualified': 'bg-green-500/20 text-green-400',
-    'meeting_booked': 'bg-purple-500/20 text-purple-400',
+    'meeting_booked': 'bg-emerald-700/20 text-emerald-400',
     'proposal_sent': 'bg-orange-500/20 text-orange-400',
     'negotiation': 'bg-pink-500/20 text-pink-400',
     'closed_won': 'bg-emerald-500/20 text-emerald-400',
@@ -91,7 +91,7 @@ export default function LeadDetailSidebar({ lead, isOpen, onClose }: LeadDetailS
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a2a2a]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-teal-500 flex items-center justify-center text-white font-semibold">
                   {(lead.full_name || lead.first_name || lead.email || 'L').charAt(0).toUpperCase()}
                 </div>
                 <div>

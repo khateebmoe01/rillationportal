@@ -86,7 +86,7 @@ export default function MeetingsInsightsPanel({
       {/* Header */}
       <div className="p-5 border-b border-rillation-border/50 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-rillation-magenta/20 to-rillation-purple/20 border border-rillation-magenta/30">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-rillation-magenta/20 to-rillation-green/20 border border-rillation-magenta/30">
             <Calendar size={24} className="text-rillation-magenta" />
           </div>
           <div>
@@ -179,10 +179,10 @@ export default function MeetingsInsightsPanel({
             transition={{ delay: 0.65 }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp size={16} className="text-rillation-purple" />
+              <TrendingUp size={16} className="text-rillation-green" />
               <p className="text-xs text-rillation-text-muted uppercase tracking-wide">Daily Average</p>
             </div>
-            <p className="text-2xl font-bold text-rillation-purple">
+            <p className="text-2xl font-bold text-rillation-green">
               {avgPerDay}
             </p>
             <p className="text-sm text-rillation-text-muted mt-1">
@@ -348,7 +348,7 @@ export default function MeetingsInsightsPanel({
             transition={{ delay: 0.9 }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <Clock size={18} className="text-rillation-purple" />
+              <Clock size={18} className="text-rillation-green" />
               <h4 className="text-base font-semibold text-rillation-text">Company Maturity</h4>
             </div>
             {meetingsByCompanyAge.length > 0 ? (

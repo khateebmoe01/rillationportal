@@ -266,7 +266,7 @@ export default function DeepView() {
       >
         <div className="flex items-center gap-3">
           <motion.div
-            className="p-2 rounded-xl bg-gradient-to-br from-rillation-purple/20 to-rillation-magenta/20 border border-rillation-purple/30"
+            className="p-2 rounded-xl bg-gradient-to-br from-rillation-green/20 to-rillation-magenta/20 border border-rillation-green/30"
             animate={{
               boxShadow: [
                 '0 0 20px rgba(168, 85, 247, 0.1)',
@@ -276,7 +276,7 @@ export default function DeepView() {
             }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <Sparkles size={24} className="text-rillation-purple" />
+            <Sparkles size={24} className="text-rillation-green" />
           </motion.div>
           <div>
             <h1 className="text-xl font-bold text-white">Deep Insights</h1>
@@ -287,7 +287,7 @@ export default function DeepView() {
         </div>
         <motion.button
           onClick={() => refetch()}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rillation-card border border-rillation-border text-white hover:text-white hover:border-rillation-purple/50 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-rillation-card border border-rillation-border text-white hover:text-white hover:border-rillation-green/50 transition-all"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           disabled={loading}
@@ -321,7 +321,7 @@ export default function DeepView() {
             className="flex flex-col items-center justify-center py-16"
           >
             <motion.div
-              className="w-12 h-12 border-3 border-rillation-purple border-t-transparent rounded-full"
+              className="w-12 h-12 border-3 border-rillation-green border-t-transparent rounded-full"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
@@ -456,7 +456,7 @@ export default function DeepView() {
                     >
                       {leadsLoading && leadsData.length === 0 ? (
                         <div className="bg-rillation-card rounded-xl border border-rillation-border p-8 flex items-center justify-center">
-                          <div className="w-6 h-6 border-2 border-rillation-purple border-t-transparent rounded-full animate-spin" />
+                          <div className="w-6 h-6 border-2 border-rillation-green border-t-transparent rounded-full animate-spin" />
             </div>
                       ) : (
                         <ExpandableDataPanel

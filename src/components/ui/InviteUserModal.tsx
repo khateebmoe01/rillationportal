@@ -172,8 +172,8 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
             {/* Header */}
             <div className="px-6 py-4 border-b border-rillation-border flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rillation-purple/20 flex items-center justify-center">
-                  <UserPlus size={20} className="text-rillation-purple" />
+                <div className="w-10 h-10 rounded-xl bg-rillation-green/20 flex items-center justify-center">
+                  <UserPlus size={20} className="text-rillation-green" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-rillation-text">Manage Users</h2>
@@ -200,7 +200,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                 }}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'invite'
-                    ? 'text-rillation-purple border-b-2 border-rillation-purple'
+                    ? 'text-rillation-green border-b-2 border-rillation-green'
                     : 'text-rillation-text-muted hover:text-rillation-text'
                 }`}
               >
@@ -217,7 +217,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                 }}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'pending'
-                    ? 'text-rillation-purple border-b-2 border-rillation-purple'
+                    ? 'text-rillation-green border-b-2 border-rillation-green'
                     : 'text-rillation-text-muted hover:text-rillation-text'
                 }`}
               >
@@ -278,7 +278,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full pl-10 pr-4 py-2.5 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-purple focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2.5 bg-rillation-bg border border-rillation-border rounded-lg text-rillation-text focus:outline-none focus:ring-2 focus:ring-rillation-green focus:border-transparent"
                             placeholder="colleague@company.com"
                             disabled={loading}
                           />
@@ -288,7 +288,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                       <button
                         type="submit"
                         disabled={loading || !email.trim()}
-                        className="w-full bg-rillation-purple hover:bg-rillation-purple/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-rillation-green hover:bg-rillation-green/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {loading ? (
                           <>
@@ -309,7 +309,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                 <div className="space-y-4">
                   {loadingUsers ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-rillation-purple" />
+                      <Loader2 className="w-6 h-6 animate-spin text-rillation-green" />
                     </div>
                   ) : loadingError ? (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg p-3 text-sm">

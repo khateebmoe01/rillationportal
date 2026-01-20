@@ -14,6 +14,7 @@ interface UseLeadsReturn {
   updateLead: (id: string, field: keyof Lead, value: unknown) => Promise<boolean>
   createLead: (leadData: Partial<Lead>) => Promise<Lead | null>
   deleteLead: (id: string) => Promise<boolean>
+  restoreLead: (id: string) => Promise<boolean>
   refetch: () => Promise<void>
   uniqueAssignees: string[]
   uniqueLeadSources: string[]
@@ -43,6 +44,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
         .from('engaged_leads')
         .select('*')
         .eq('client', selectedClient)
+        .is('deleted_at', null) // Only fetch non-deleted records
         .order('created_at', { ascending: false })
 
       // Apply filters
@@ -223,12 +225,12 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     }
   }, [selectedClient])
 
-  // Delete lead
+  // Soft delete lead (sets deleted_at timestamp instead of actually deleting)
   const deleteLead = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const { error: deleteError } = await supabase
-        .from('engaged_leads')
-        .delete()
+      const { error: deleteError } = await (supabase
+        .from('engaged_leads') as SupabaseAny)
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id)
 
       if (deleteError) {
@@ -236,6 +238,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
         return false
       }
 
+      // Remove from local state (it's still in DB but marked as deleted)
       setLeads(prev => prev.filter(lead => lead.id !== id))
       return true
     } catch (err) {
@@ -243,6 +246,28 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
       return false
     }
   }, [])
+
+  // Restore a soft-deleted lead
+  const restoreLead = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      const { error: restoreError } = await (supabase
+        .from('engaged_leads') as SupabaseAny)
+        .update({ deleted_at: null })
+        .eq('id', id)
+
+      if (restoreError) {
+        setError(restoreError.message)
+        return false
+      }
+
+      // Refetch to include the restored lead
+      await fetchLeads()
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to restore lead')
+      return false
+    }
+  }, [fetchLeads])
 
   // Compute unique values for filters
   const uniqueAssignees = [...new Set(leads.map(l => l.assignee).filter(Boolean))] as string[]
@@ -260,6 +285,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     updateLead,
     createLead,
     deleteLead,
+    restoreLead,
     refetch: fetchLeads,
     uniqueAssignees,
     uniqueLeadSources,

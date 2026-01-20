@@ -235,7 +235,7 @@ export default function EditableFunnelSpreadsheet({
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-gradient-to-r from-rillation-purple to-rillation-magenta">
+            <tr className="bg-gradient-to-r from-rillation-green to-rillation-magenta">
               <th className="px-2 py-1.5 text-left text-xs font-medium text-white min-w-[140px]">
                 Metric
               </th>
@@ -251,7 +251,7 @@ export default function EditableFunnelSpreadsheet({
                   className={`px-2 py-1 text-center text-xs font-medium min-w-[70px] ${
                     col === 'actual' ? 'text-rillation-cyan' : 
                     col === 'projected' ? 'text-rillation-green' : 
-                    'text-rillation-purple'
+                    'text-rillation-green'
                   }`}
                 >
                   {columnLabels[col]}
@@ -291,7 +291,7 @@ export default function EditableFunnelSpreadsheet({
                           onChange={(e) => handleCellChange(row.key, col, e.target.value)}
                           onFocus={handleFocus}
                           className={`w-full px-1.5 py-1 text-xs text-center rounded border transition-all
-                            focus:border-rillation-purple focus:outline-none focus:ring-1 focus:ring-rillation-purple/50
+                            focus:border-rillation-green focus:outline-none focus:ring-1 focus:ring-rillation-green/50
                             hover:border-rillation-border
                             ${col === 'actual' 
                               ? 'bg-rillation-cyan/10 border-rillation-cyan/30 text-rillation-cyan font-bold' 

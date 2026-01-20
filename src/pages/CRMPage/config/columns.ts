@@ -1,9 +1,9 @@
 import type { Lead } from '../types'
 
-export type ColumnType = 'text' | 'select' | 'date' | 'currency' | 'phone' | 'url'
+export type ColumnType = 'text' | 'select' | 'date' | 'currency' | 'phone' | 'url' | 'pipeline'
 
 export interface ColumnDef {
-  id: keyof Lead
+  id: keyof Lead | 'pipeline_progress'
   label: string
   type: ColumnType
   width: number
@@ -15,7 +15,8 @@ export interface ColumnDef {
 export const COLUMNS: ColumnDef[] = [
   { id: 'full_name', label: 'Lead Name', type: 'text', width: 160 },
   { id: 'company', label: 'Organization', type: 'text', width: 150 },
-  { id: 'stage', label: 'Stage', type: 'select', width: 120, options: ['new', 'contacted', 'follow_up', 'qualified', 'demo_booked', 'demo_showed', 'proposal_sent', 'negotiation', 'closed_won', 'closed_lost', 'disqualified'] },
+  { id: 'stage', label: 'Stage', type: 'select', width: 140, options: ['new', 'contacted', 'follow_up', 'meeting_booked', 'qualified', 'demo_booked', 'demo_showed', 'proposal_sent', 'negotiation', 'closed_won', 'closed_lost', 'disqualified'] },
+  { id: 'pipeline_progress', label: 'Pipeline Progress', type: 'pipeline', width: 140 },
   { id: 'lead_source', label: 'Lead Source', type: 'select', width: 130, options: ['Email', 'LinkedIn', 'Referral', 'Website', 'Cold Call', 'Event', 'Other'] },
   { id: 'meeting_date', label: 'Meeting Date', type: 'date', width: 130 },
   { id: 'estimated_value', label: 'Est. Value', type: 'currency', width: 100 },
@@ -34,6 +35,7 @@ export const STAGE_COLORS: Record<string, { bg: string; text: string; label: str
   'new': { bg: '#1e3a5f', text: '#60a5fa', label: 'New' },
   'contacted': { bg: '#3d2f5c', text: '#a78bfa', label: 'Contacted' },
   'follow_up': { bg: '#2d3748', text: '#cbd5e1', label: 'Follow Up' },
+  'meeting_booked': { bg: '#1a4d3d', text: '#00C853', label: 'Meeting Booked' },
   'qualified': { bg: '#1e4d3d', text: '#34d399', label: 'Qualified' },
   'demo_booked': { bg: '#4a3f2a', text: '#fbbf24', label: 'Demo Booked' },
   'demo_showed': { bg: '#4a2f2a', text: '#f97316', label: 'Demo Showed' },

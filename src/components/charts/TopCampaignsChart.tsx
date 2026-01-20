@@ -90,7 +90,7 @@ export default function TopCampaignsChart({ campaigns, maxItems = 5 }: TopCampai
               {/* Horizontal bar */}
               <div className="w-full h-2 bg-rillation-bg rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-rillation-purple-dark to-rillation-purple transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-rillation-green-dark to-rillation-green transition-all duration-500"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
