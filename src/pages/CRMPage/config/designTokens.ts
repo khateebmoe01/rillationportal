@@ -28,15 +28,18 @@ export const spacing = {
 // ==============================================
 export const layout = {
   // Toolbar
-  toolbarHeight: 56,
+  toolbarHeight: 52,
   
-  // Table
-  rowHeight: 52,
-  headerHeight: 44,
+  // Table - reduced for denser view
+  rowHeight: 44,
+  headerHeight: 40,
+  
+  // Cell padding - increased for breathing room
+  cellPaddingX: 16,
   
   // Columns
-  checkboxColumnWidth: 48,
-  actionColumnWidth: 48,
+  checkboxColumnWidth: 44,
+  actionColumnWidth: 44,
   
   // Min widths for columns
   minColumnWidth: 80,
@@ -113,7 +116,7 @@ export const colors = {
 } as const
 
 // ==============================================
-// TYPOGRAPHY
+// TYPOGRAPHY - Reduced for denser view
 // ==============================================
 export const typography = {
   // Font sizes
@@ -122,8 +125,8 @@ export const typography = {
     sm: '12px',
     base: '13px',
     md: '14px',
-    lg: '16px',
-    xl: '18px',
+    lg: '15px',
+    xl: '16px',
   },
   
   // Font weights
@@ -169,9 +172,9 @@ export const shadows = {
   md: '0 4px 6px -1px rgba(0, 0, 0, 0.4)',
   lg: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.6)',
-  sticky: '4px 0 12px -2px rgba(0, 0, 0, 0.5)',
+  sticky: '4px 0 8px -2px rgba(0, 0, 0, 0.4)',
   dropdown: '0 12px 40px -8px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.05)',
-  header: '0 2px 8px -2px rgba(0, 0, 0, 0.4)',
+  header: '0 1px 3px 0 rgba(0, 0, 0, 0.3)',
 } as const
 
 // ==============================================
