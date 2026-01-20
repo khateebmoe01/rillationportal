@@ -11,7 +11,7 @@ interface Position {
 interface DropdownPortalProps {
   isOpen: boolean
   onClose: () => void
-  triggerRef: React.RefObject<HTMLElement>
+  triggerRef: React.RefObject<HTMLElement | null>
   children: ReactNode
   /** Preferred placement */
   placement?: 'bottom-start' | 'bottom-end' | 'bottom-center' | 'top-start' | 'top-end' | 'top-center'

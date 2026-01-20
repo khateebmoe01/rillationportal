@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Search, Plus, ChevronDown, X, Check } from 'lucide-react'
 import { COLUMNS, STAGE_COLORS, LEAD_SOURCE_COLORS } from '../config/columns'
-import { colors, layout, typography, radius, shadows, transitions } from '../config/designTokens'
+import { colors, layout, typography, shadows } from '../config/designTokens'
 import type { LeadFilters } from '../types'
 
 interface CRMHeaderProps {
@@ -196,7 +196,7 @@ export default function CRMHeader({
   selectedCount = 0,
 }: CRMHeaderProps) {
   const [localSearch, setLocalSearch] = useState(searchQuery)
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Debounced search
   const debouncedSearch = useCallback((query: string) => {

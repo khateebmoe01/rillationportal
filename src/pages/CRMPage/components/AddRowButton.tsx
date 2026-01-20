@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import { colors, layout, typography } from '../config/designTokens'
+import { colors, typography } from '../config/designTokens'
 
 interface AddRowButtonProps {
   onClick: () => void
