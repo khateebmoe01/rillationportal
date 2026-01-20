@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================
+   CRM Design Tokens - CSS Custom Properties
+   ===================================================== */
+:root {
+  /* Z-index scale */
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+  
+  /* Row heights */
+  --row-compact: 40px;
+  --row-comfortable: 48px;
+  
+  /* Cell padding */
+  --cell-padding-x: 12px;
+  --cell-padding-y: 12px;
+  
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Shadows */
+  --shadow-sticky: 4px 0 8px -2px rgba(0, 0, 0, 0.4);
+  --shadow-dropdown: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  
+  /* CRM Table Colors */
+  --table-bg: #1e293b; /* slate-800 */
+  --table-header-bg: #1e293b; /* slate-800 - matches cells */
+  --table-row-hover: rgba(255, 255, 255, 0.03);
+  --table-border: rgba(51, 65, 85, 0.5); /* slate-700/50 */
+}
+
 /* Base styles */
 * {
   margin: 0;
@@ -132,4 +166,76 @@ body {
   background: #141414;
   border-radius: 12px;
   border: 1px solid #222222;
+}
+
+/* =====================================================
+   CRM Table Utilities
+   ===================================================== */
+
+/* Focus ring utility for editable cells */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-0;
+}
+
+/* Editable cell hover state */
+.editable-cell {
+  @apply cursor-text transition-colors rounded;
+  padding: var(--cell-padding-y) var(--cell-padding-x);
+}
+
+.editable-cell:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Table row with consistent height */
+.table-row {
+  min-height: var(--row-comfortable);
+  display: flex;
+  align-items: center;
+}
+
+/* Sticky column shadow */
+.sticky-shadow {
+  box-shadow: var(--shadow-sticky);
+}
+
+/* Dropdown portal container */
+.dropdown-portal {
+  position: fixed;
+  z-index: var(--z-dropdown);
+}
+
+/* Skeleton loading pulse */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+  background-size: 200% 100%;
+  border-radius: var(--radius-md);
+}
+
+/* Row hover highlight for full row including sticky */
+.row-highlight {
+  position: relative;
+}
+
+.row-highlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
+  transition: background 0.15s;
+}
+
+.row-highlight:hover::before {
+  background: var(--table-row-hover);
 }

@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useRef, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { ChevronDown, Check } from 'lucide-react'
+import DropdownPortal from './DropdownPortal'
 
 export interface SelectOption {
   value: string
@@ -36,33 +37,51 @@ export default function AnimatedSelect({
   size = 'md',
 }: AnimatedSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  // Close on escape
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [])
-
-  const handleSelect = (optionValue: string) => {
+  const handleSelect = useCallback((optionValue: string) => {
     onChange(optionValue)
     setIsOpen(false)
-  }
+    setFocusedIndex(-1)
+  }, [onChange])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (disabled) return
+
+    switch (e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault()
+        if (isOpen && focusedIndex >= 0) {
+          handleSelect(options[focusedIndex].value)
+        } else {
+          setIsOpen(true)
+          setFocusedIndex(options.findIndex(o => o.value === value))
+        }
+        break
+      case 'ArrowDown':
+        e.preventDefault()
+        if (!isOpen) {
+          setIsOpen(true)
+          setFocusedIndex(0)
+        } else {
+          setFocusedIndex(prev => (prev + 1) % options.length)
+        }
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        if (isOpen) {
+          setFocusedIndex(prev => (prev - 1 + options.length) % options.length)
+        }
+        break
+      case 'Escape':
+        e.preventDefault()
+        setIsOpen(false)
+        setFocusedIndex(-1)
+        break
+    }
+  }, [disabled, isOpen, focusedIndex, options, value, handleSelect])
 
   const selectedOption = options.find(opt => opt.value === value)
   const displayValue = selectedOption?.label || placeholder
@@ -73,7 +92,7 @@ export default function AnimatedSelect({
   }
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div className={`relative ${className}`}>
       {/* Label */}
       {label && (
         <label className="block text-sm font-medium text-white/70 mb-1.5">
@@ -84,14 +103,18 @@ export default function AnimatedSelect({
 
       {/* Trigger Button */}
       <motion.button
+        ref={triggerRef}
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         className={`
           w-full flex items-center justify-between gap-2 
           bg-slate-800 border border-slate-700 rounded-lg text-white
           ${sizeClasses[size]}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-600 focus:outline-none focus:border-violet-500'}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50'}
           transition-colors
         `}
         whileHover={disabled ? {} : { scale: 1.005 }}
@@ -109,62 +132,68 @@ export default function AnimatedSelect({
         </motion.div>
       </motion.button>
 
-      {/* Dropdown */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute top-full left-0 right-0 mt-1.5 z-50"
-          >
-            <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl overflow-hidden">
-              <div className="max-h-64 overflow-y-auto py-1">
-                {options.map((option, index) => {
-                  const isSelected = option.value === value
-                  return (
-                    <motion.button
-                      key={option.value}
-                      type="button"
-                      onClick={() => handleSelect(option.value)}
-                      className={`
-                        w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors
-                        ${isSelected ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/5'}
-                      `}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.02 }}
-                      whileHover={{ x: 2 }}
+      {/* Dropdown via Portal */}
+      <DropdownPortal
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false)
+          setFocusedIndex(-1)
+        }}
+        triggerRef={triggerRef}
+        placement="bottom-start"
+        minWidth="trigger"
+      >
+        <div 
+          className="bg-slate-900/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-dropdown overflow-hidden"
+          role="listbox"
+        >
+          <div className="max-h-64 overflow-y-auto py-1">
+            {options.map((option, index) => {
+              const isSelected = option.value === value
+              const isFocused = index === focusedIndex
+              return (
+                <motion.button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => handleSelect(option.value)}
+                  onMouseEnter={() => setFocusedIndex(index)}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors
+                    ${isSelected ? 'bg-white/10 text-white' : 'text-white/80'}
+                    ${isFocused ? 'bg-white/5' : ''}
+                  `}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.02 }}
+                >
+                  {showCheck && (
+                    <div
+                      className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                        isSelected
+                          ? 'bg-violet-500 border-violet-500'
+                          : 'border-slate-500'
+                      }`}
                     >
-                      {showCheck && (
-                        <div
-                          className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                            isSelected
-                              ? 'bg-violet-500 border-violet-500'
-                              : 'border-slate-500'
-                          }`}
-                        >
-                          {isSelected && <Check size={10} className="text-white" />}
-                        </div>
-                      )}
-                      {option.icon && (
-                        <span className="flex-shrink-0">{option.icon}</span>
-                      )}
-                      <span className="truncate">{option.label}</span>
-                    </motion.button>
-                  )
-                })}
-                {options.length === 0 && (
-                  <div className="px-3 py-4 text-center text-white/40 text-sm">
-                    No options available
-                  </div>
-                )}
+                      {isSelected && <Check size={10} className="text-white" />}
+                    </div>
+                  )}
+                  {option.icon && (
+                    <span className="flex-shrink-0">{option.icon}</span>
+                  )}
+                  <span className="truncate">{option.label}</span>
+                </motion.button>
+              )
+            })}
+            {options.length === 0 && (
+              <div className="px-3 py-4 text-center text-white/40 text-sm">
+                No options available
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            )}
+          </div>
+        </div>
+      </DropdownPortal>
     </div>
   )
 }

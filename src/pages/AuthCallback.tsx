@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { userNeedsPassword } from '../lib/auth-helpers'
 import { Loader2 } from 'lucide-react'
 
 export default function AuthCallback() {
@@ -26,6 +27,12 @@ export default function AuthCallback() {
         if (session?.user) {
           // If this is a recovery flow, redirect to set password page
           if (type === 'recovery') {
+            navigate('/set-password')
+            return
+          }
+
+          // Check if OAuth user needs to set a password
+          if (userNeedsPassword(session.user)) {
             navigate('/set-password')
             return
           }

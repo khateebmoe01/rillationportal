@@ -42,6 +42,34 @@ export default {
       fontFamily: {
         'sans': ['Sora', 'system-ui', 'sans-serif'],
       },
+      // CRM Design Tokens - consistent spacing and sizing
+      spacing: {
+        'row-compact': '40px',
+        'row-comfortable': '48px',
+        'cell-x': '12px',
+        'cell-y': '12px',
+      },
+      minHeight: {
+        'row-compact': '40px',
+        'row-comfortable': '48px',
+      },
+      height: {
+        'row-compact': '40px',
+        'row-comfortable': '48px',
+      },
+      borderRadius: {
+        'card': '12px',
+        'cell': '8px',
+      },
+      zIndex: {
+        'dropdown': '100',
+        'modal': '200',
+        'toast': '300',
+      },
+      boxShadow: {
+        'sticky': '4px 0 8px -2px rgba(0, 0, 0, 0.4)',
+        'dropdown': '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
+      },
     },
   },
   plugins: [],

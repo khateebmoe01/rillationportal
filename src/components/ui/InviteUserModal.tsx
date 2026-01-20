@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Mail, Loader2, UserPlus, CheckCircle, Trash2, Users, Clock } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -26,11 +26,13 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
   const [activeTab, setActiveTab] = useState<'invite' | 'pending'>('invite')
   const [users, setUsers] = useState<InvitedUser[]>([])
   const [loadingUsers, setLoadingUsers] = useState(false)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     if (!session) return
     setLoadingUsers(true)
+    setLoadingError(null)
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-users`,
@@ -45,19 +47,25 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
       const data = await response.json()
       if (response.ok) {
         setUsers(data.users || [])
+        setLoadingError(null)
+      } else {
+        setLoadingError(data.error || 'Failed to load users')
+        setUsers([])
       }
     } catch (err) {
       console.error('Failed to fetch users:', err)
+      setLoadingError(err instanceof Error ? err.message : 'Load failed')
+      setUsers([])
     } finally {
       setLoadingUsers(false)
     }
-  }
+  }, [session])
 
   useEffect(() => {
     if (isOpen && activeTab === 'pending') {
       fetchUsers()
     }
-  }, [isOpen, activeTab, session])
+  }, [isOpen, activeTab, fetchUsers])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -129,6 +137,7 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
   const handleClose = () => {
     setEmail('')
     setError(null)
+    setLoadingError(null)
     setSuccess(false)
     setActiveTab('invite')
     onClose()
@@ -184,7 +193,11 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
             {/* Tabs */}
             <div className="flex border-b border-rillation-border shrink-0">
               <button
-                onClick={() => setActiveTab('invite')}
+                onClick={() => {
+                  setActiveTab('invite')
+                  setError(null)
+                  setLoadingError(null)
+                }}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'invite'
                     ? 'text-rillation-purple border-b-2 border-rillation-purple'
@@ -197,7 +210,11 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                 </span>
               </button>
               <button
-                onClick={() => setActiveTab('pending')}
+                onClick={() => {
+                  setActiveTab('pending')
+                  setError(null)
+                  setLoadingError(null)
+                }}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
                   activeTab === 'pending'
                     ? 'text-rillation-purple border-b-2 border-rillation-purple'
@@ -293,6 +310,10 @@ export default function InviteUserModal({ isOpen, onClose }: InviteUserModalProp
                   {loadingUsers ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-rillation-purple" />
+                    </div>
+                  ) : loadingError ? (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg p-3 text-sm">
+                      {loadingError}
                     </div>
                   ) : users.length === 0 ? (
                     <div className="text-center py-8 text-rillation-text-muted">

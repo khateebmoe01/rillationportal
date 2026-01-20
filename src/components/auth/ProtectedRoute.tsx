@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { userNeedsPassword } from '../../lib/auth-helpers'
 import { Loader2 } from 'lucide-react'
 
 interface ProtectedRouteProps {
@@ -23,6 +24,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  // Check if OAuth user needs to set a password
+  if (userNeedsPassword(user)) {
+    return <Navigate to="/set-password" replace />
   }
 
   // Portal only allows client role users
