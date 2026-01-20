@@ -21,11 +21,11 @@ interface CRMTableProps {
 // Skeleton row component
 function SkeletonRow({ columnWidths }: { columnWidths: Record<string, number> }) {
   return (
-    <tr className="border-b border-[#1f1f1f]" style={{ height: '44px' }}>
-      <td className="p-0 w-10">
-        <div className="px-3 py-2">
+    <tr className="border-b border-[#1f1f1f]" style={{ height: '32px' }}>
+      <td className="p-0 w-8">
+        <div className="px-2 py-1">
           <motion.div
-            className="h-4 w-4 bg-[#1f1f1f] rounded"
+            className="h-3 w-3 bg-[#1f1f1f] rounded"
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
@@ -37,17 +37,17 @@ function SkeletonRow({ columnWidths }: { columnWidths: Record<string, number> })
           style={{ width: columnWidths[column.id], minWidth: columnWidths[column.id] }}
           className="p-0"
         >
-          <div className="px-3 py-2">
+          <div className="px-2 py-1">
             <motion.div
-              className="h-4 bg-[#1f1f1f] rounded"
+              className="h-3 bg-[#1f1f1f] rounded"
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              style={{ width: Math.min(columnWidths[column.id] - 24, 100) }}
+              style={{ width: Math.min(columnWidths[column.id] - 16, 80) }}
             />
           </div>
         </td>
       ))}
-      <td className="p-0 w-10" />
+      <td className="p-0 w-8" />
     </tr>
   )
 }
@@ -114,11 +114,11 @@ export default function CRMTable({
       >
         {/* Header */}
         <thead>
-          <tr className="bg-[#161616] border-b border-[#2a2a2a]" style={{ height: '36px' }}>
+          <tr className="bg-[#161616] border-b border-[#2a2a2a]" style={{ height: '28px' }}>
             {/* Checkbox header */}
             <ResizableColumnHeader
               label=""
-              width={40}
+              width={32}
               onResize={() => {}}
               isCheckbox
             >
@@ -129,7 +129,7 @@ export default function CRMTable({
                   if (el) el.indeterminate = someSelected
                 }}
                 onChange={onToggleSelectAll}
-                className="w-4 h-4 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
+                className="w-3.5 h-3.5 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
               />
             </ResizableColumnHeader>
             

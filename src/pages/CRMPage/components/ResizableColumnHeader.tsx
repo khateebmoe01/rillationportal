@@ -80,7 +80,7 @@ function ResizableColumnHeader({
 
   if (isCheckbox) {
     return (
-      <th className="w-10 px-3" style={{ width: 40, minWidth: 40, maxWidth: 40 }}>
+      <th className="w-8 px-2" style={{ width: 32, minWidth: 32, maxWidth: 32 }}>
         {children}
       </th>
     )
@@ -89,11 +89,11 @@ function ResizableColumnHeader({
   return (
     <th
       style={{ width, minWidth: width, maxWidth: width }}
-      className="relative text-left px-3 py-2 text-[12px] font-medium text-[#f0f0f0] uppercase tracking-wider select-none"
+      className="relative text-left px-2 py-1 text-[10px] font-medium text-[#f0f0f0] uppercase tracking-wide select-none whitespace-nowrap"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => !isResizing && setIsHovering(false)}
     >
-      <span className="truncate block pr-2">{label}</span>
+      <span className="block pr-2">{label}</span>
       
       {/* Resize handle */}
       <div

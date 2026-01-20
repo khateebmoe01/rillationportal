@@ -113,17 +113,17 @@ export default function SelectCell({ value, options, onChange, colorMap }: Selec
           <div
             key={option}
             onMouseDown={(e) => handleSelect(e, option)}
-            className="px-3 py-1.5 cursor-pointer hover:bg-[#2a2a2a] flex items-center"
+            className="px-2 py-1 cursor-pointer hover:bg-[#2a2a2a] flex items-center"
           >
             {optColors ? (
               <span
-                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
                 style={{ backgroundColor: optColors.bg, color: optColors.text }}
               >
                 {optLabel}
               </span>
             ) : (
-              <span className="text-[13px] text-[#f0f0f0]">{optLabel}</span>
+              <span className="text-[11px] text-[#f0f0f0]">{optLabel}</span>
             )}
           </div>
         )
@@ -132,22 +132,22 @@ export default function SelectCell({ value, options, onChange, colorMap }: Selec
   ) : null
 
   return (
-    <div ref={containerRef} className="relative w-full h-11">
+    <div ref={containerRef} className="relative w-full h-8">
       <div
         onMouseDown={handleClick}
-        className="w-full h-11 px-3 py-2 flex items-center cursor-pointer hover:bg-[#1a1a1a]"
+        className="w-full h-8 px-2 py-1 flex items-center cursor-pointer hover:bg-[#1a1a1a]"
       >
         {value && colors ? (
           <span
-            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
             style={{ backgroundColor: colors.bg, color: colors.text }}
           >
             {displayValue}
           </span>
         ) : value ? (
-          <span className="text-[13px] text-[#f0f0f0]">{displayValue}</span>
+          <span className="text-[11px] text-[#f0f0f0]">{displayValue}</span>
         ) : (
-          <span className="text-[#888888] text-[13px]">-</span>
+          <span className="text-[#888888] text-[11px]">-</span>
         )}
       </div>
 

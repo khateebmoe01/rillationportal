@@ -134,21 +134,21 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
       exit="exit"
       transition={{ delay: index * 0.03, duration: 0.2 }}
       className={`group border-b border-[#1f1f1f] hover:bg-[#1a1a1a] ${isSelected ? 'bg-[#1a2a3a]' : ''}`}
-      style={{ height: '44px' }}
+      style={{ height: '32px' }}
       data-lead-id={lead.id}
       onDoubleClick={handleRowDoubleClick}
     >
       {/* Checkbox column */}
-      <td className="p-0 w-10">
+      <td className="p-0 w-8">
         <div 
-          className="w-full h-11 flex items-center justify-center cursor-pointer"
+          className="w-full h-8 flex items-center justify-center cursor-pointer"
           onClick={handleCheckboxClick}
         >
           <input
             type="checkbox"
             checked={isSelected}
             onChange={() => {}}
-            className="w-4 h-4 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
+            className="w-3.5 h-3.5 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
           />
         </div>
       </td>
@@ -167,13 +167,13 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
       })}
       
       {/* Delete action column */}
-      <td className="p-0 w-10">
+      <td className="p-0 w-8">
         <button
           onClick={handleDelete}
-          className="w-full h-11 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[#888888] hover:text-[#ef4444]"
+          className="w-full h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[#888888] hover:text-[#ef4444]"
           title="Delete lead"
         >
-          <Trash2 size={14} />
+          <Trash2 size={12} />
         </button>
       </td>
     </motion.tr>

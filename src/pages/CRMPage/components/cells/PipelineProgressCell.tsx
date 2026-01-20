@@ -176,11 +176,11 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
   ) : null
 
   return (
-    <div ref={containerRef} className="relative w-full h-11">
+    <div ref={containerRef} className="relative w-full h-8">
       {/* Display trigger */}
       <div
         onMouseDown={handleClick}
-        className="w-full h-11 px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-[#1a1a1a]"
+        className="w-full h-8 px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-[#1a1a1a]"
       >
         {/* Progress indicator */}
         <div className="flex items-center gap-1">
@@ -190,7 +190,7 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
               return (
                 <div
                   key={stage.key}
-                  className={`w-2 h-2 rounded-sm transition-colors ${
+                  className={`w-1.5 h-1.5 rounded-sm transition-colors ${
                     isCompleted ? 'bg-[#00C853]' : 'bg-[#2a2a2a]'
                   }`}
                   title={`${stage.label}${isCompleted ? ' (completed)' : ''}`}
@@ -198,7 +198,7 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
               )
             })}
           </div>
-          <span className="text-[11px] text-[#888888] ml-1">
+          <span className="text-[10px] text-[#888888]">
             {completedCount}/{PIPELINE_STAGES.length}
           </span>
         </div>

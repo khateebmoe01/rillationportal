@@ -13,21 +13,21 @@ export interface ColumnDef {
 
 // Single source of truth for all column behavior
 export const COLUMNS: ColumnDef[] = [
-  { id: 'full_name', label: 'Lead Name', type: 'text', width: 160 },
-  { id: 'company', label: 'Organization', type: 'text', width: 150 },
-  { id: 'stage', label: 'Stage', type: 'select', width: 140, options: ['new', 'contacted', 'follow_up', 'meeting_booked', 'qualified', 'demo_booked', 'demo_showed', 'proposal_sent', 'negotiation', 'closed_won', 'closed_lost', 'disqualified'] },
-  { id: 'pipeline_progress', label: 'Pipeline Progress', type: 'pipeline', width: 140 },
-  { id: 'lead_source', label: 'Lead Source', type: 'select', width: 130, options: ['Email', 'LinkedIn', 'Referral', 'Website', 'Cold Call', 'Event', 'Other'] },
-  { id: 'meeting_date', label: 'Meeting Date', type: 'date', width: 130 },
-  { id: 'estimated_value', label: 'Est. Value', type: 'currency', width: 100 },
-  { id: 'lead_phone', label: 'Lead Phone', type: 'phone', width: 120 },
-  { id: 'company_phone', label: 'Company Phone', type: 'phone', width: 130 },
-  { id: 'linkedin_url', label: 'LinkedIn', type: 'url', width: 100 },
-  { id: 'context', label: 'Context', type: 'text', width: 200 },
-  { id: 'next_touchpoint', label: 'Next Touch', type: 'date', width: 120 },
-  { id: 'industry', label: 'Industry', type: 'text', width: 120 },
-  { id: 'assignee', label: 'Assignee', type: 'select', width: 120, options: ['Mo', 'Unassigned'] },
-  { id: 'created_at', label: 'Created', type: 'date', width: 110 },
+  { id: 'full_name', label: 'Lead Name', type: 'text', width: 110 },
+  { id: 'company', label: 'Organization', type: 'text', width: 100 },
+  { id: 'stage', label: 'Stage', type: 'select', width: 110, options: ['new', 'contacted', 'follow_up', 'meeting_booked', 'qualified', 'demo_booked', 'demo_showed', 'proposal_sent', 'negotiation', 'closed_won', 'closed_lost', 'disqualified'] },
+  { id: 'pipeline_progress', label: 'Pipeline Progress', type: 'pipeline', width: 115 },
+  { id: 'lead_source', label: 'Lead Source', type: 'select', width: 90, options: ['Email', 'LinkedIn', 'Referral', 'Website', 'Cold Call', 'Event', 'Other'] },
+  { id: 'meeting_date', label: 'Meeting Date', type: 'date', width: 95 },
+  { id: 'estimated_value', label: 'Est. Value', type: 'currency', width: 80 },
+  { id: 'lead_phone', label: 'Lead Phone', type: 'phone', width: 95 },
+  { id: 'company_phone', label: 'Company Phone', type: 'phone', width: 105 },
+  { id: 'linkedin_url', label: 'LinkedIn', type: 'url', width: 70 },
+  { id: 'context', label: 'Context', type: 'text', width: 140 },
+  { id: 'next_touchpoint', label: 'Next Touch', type: 'date', width: 90 },
+  { id: 'industry', label: 'Industry', type: 'text', width: 80 },
+  { id: 'assignee', label: 'Assignee', type: 'select', width: 80, options: ['Mo', 'Unassigned'] },
+  { id: 'created_at', label: 'Created', type: 'date', width: 80 },
 ]
 
 // Stage colors for pills

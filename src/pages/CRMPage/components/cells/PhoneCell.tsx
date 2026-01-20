@@ -66,7 +66,7 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
         placeholder="(555) 555-5555"
-        className="w-full h-11 bg-[#1f1f1f] text-[#f0f0f0] text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
+        className="w-full h-8 bg-[#1f1f1f] text-[#f0f0f0] text-[11px] px-2 py-1 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
       />
     )
   }
@@ -77,7 +77,7 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full h-11 px-3 py-2 text-[13px] cursor-text hover:bg-[#1a1a1a] flex items-center"
+      className="w-full h-8 px-2 py-1 text-[11px] cursor-text hover:bg-[#1a1a1a] flex items-center"
     >
       {hasPhone ? (
         <a
