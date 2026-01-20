@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { formatPhone } from '../../utils/formatters'
+import { colors, layout, typography } from '../../config/designTokens'
 
 interface PhoneCellProps {
   value: string | null
@@ -47,7 +48,6 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
     e.preventDefault()
     e.stopPropagation()
     if (!isEditing) {
-      // Check if clicking on the phone link
       if ((e.target as HTMLElement).tagName === 'A') {
         return
       }
@@ -66,7 +66,15 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
         placeholder="(555) 555-5555"
-        className="w-full h-8 bg-[#1f1f1f] text-[#f0f0f0] text-[11px] px-2 py-1 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
+        className="w-full outline-none border-0"
+        style={{
+          height: layout.rowHeight,
+          padding: '0 12px',
+          backgroundColor: colors.bg.overlay,
+          color: colors.text.primary,
+          fontSize: typography.size.base,
+          boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
+        }}
       />
     )
   }
@@ -77,18 +85,26 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full h-8 px-2 py-1 text-[11px] cursor-text hover:bg-[#1a1a1a] flex items-center"
+      className="w-full flex items-center cursor-text transition-colors"
+      style={{ 
+        height: layout.rowHeight,
+        padding: '0 12px',
+        fontSize: typography.size.base,
+      }}
     >
       {hasPhone ? (
         <a
           href={`tel:${value}`}
-          className="text-[#f0f0f0] hover:text-[#60a5fa] hover:underline"
+          className="hover:underline transition-colors"
+          style={{ color: colors.text.muted }}
           onClick={(e) => e.stopPropagation()}
+          onMouseEnter={(e) => e.currentTarget.style.color = colors.accent.secondary}
+          onMouseLeave={(e) => e.currentTarget.style.color = colors.text.muted}
         >
           {formatted}
         </a>
       ) : (
-        <span className="text-[#888888]">-</span>
+        <span style={{ color: colors.text.placeholder }}>—</span>
       )}
     </div>
   )

@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trash2 } from 'lucide-react'
+import { Trash2, AlertTriangle } from 'lucide-react'
 import { useLeads } from './hooks/useLeads'
 import CRMHeader from './components/CRMHeader'
 import CRMTable from './components/CRMTable'
 import AddRowButton from './components/AddRowButton'
 import LeadDetailSidebar from './components/LeadDetailSidebar'
+import { colors, typography, radius, shadows } from './config/designTokens'
 import type { Lead, LeadFilters } from './types'
 
 export default function CRMPage() {
@@ -41,9 +42,8 @@ export default function CRMPage() {
     if (!container) return
 
     const handleContextMenu = (e: MouseEvent) => {
-      // Show modal if rows are selected
       if (selectedIdsRef.current.size > 0) {
-        e.preventDefault() // Prevent default context menu
+        e.preventDefault()
         setShowDeleteModal(true)
       }
     }
@@ -60,24 +60,19 @@ export default function CRMPage() {
     const shouldOpen = searchParams.get('open') === 'true'
 
     if (leadEmail) {
-      // Find the lead by email (case-insensitive)
       const matchingLead = leads.find(
         l => l.email?.toLowerCase() === leadEmail.toLowerCase()
       )
 
       if (matchingLead) {
         deepLinkProcessed.current = true
-        
-        // Highlight the row
         setSelectedIds(new Set([matchingLead.id]))
         
-        // Open sidebar if requested
         if (shouldOpen) {
           setSidebarLead(matchingLead)
           setIsSidebarOpen(true)
         }
 
-        // Scroll to the row after a short delay for render
         setTimeout(() => {
           const row = document.querySelector(`[data-lead-id="${matchingLead.id}"]`)
           if (row) {
@@ -85,33 +80,27 @@ export default function CRMPage() {
           }
         }, 100)
 
-        // Clear URL params after processing
         setSearchParams({}, { replace: true })
       }
     }
   }, [leads, loading, searchParams, setSearchParams])
 
-  // Handle row click to open sidebar
   const handleRowClick = useCallback((lead: Lead) => {
     setSidebarLead(lead)
     setIsSidebarOpen(true)
   }, [])
 
-  // Close sidebar
   const handleCloseSidebar = useCallback(() => {
     setIsSidebarOpen(false)
     setSidebarLead(null)
   }, [])
 
-  // Handle update from table
   const handleUpdate = useCallback((id: string, field: keyof Lead, value: unknown) => {
     updateLead(id, field, value)
   }, [updateLead])
 
-  // Handle delete single row
   const handleDelete = useCallback((id: string) => {
     deleteLead(id)
-    // Remove from selection if deleted
     setSelectedIds(prev => {
       const next = new Set(prev)
       next.delete(id)
@@ -119,13 +108,10 @@ export default function CRMPage() {
     })
   }, [deleteLead])
 
-  // Handle bulk delete
   const handleBulkDelete = useCallback(async () => {
     if (selectedIds.size === 0) return
     
     setIsDeleting(true)
-    
-    // Delete all selected leads
     const deletePromises = Array.from(selectedIds).map(id => deleteLead(id))
     await Promise.all(deletePromises)
     
@@ -134,7 +120,6 @@ export default function CRMPage() {
     setIsDeleting(false)
   }, [selectedIds, deleteLead])
 
-  // Handle row selection toggle
   const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
@@ -147,7 +132,6 @@ export default function CRMPage() {
     })
   }, [])
 
-  // Handle select all toggle
   const handleToggleSelectAll = useCallback(() => {
     if (selectedIds.size === leads.length) {
       setSelectedIds(new Set())
@@ -156,18 +140,14 @@ export default function CRMPage() {
     }
   }, [leads, selectedIds.size])
 
-  // Handle add new lead
   const handleAdd = useCallback(async () => {
-    // Create a new lead with minimal data - auto-focuses first cell
     const newLead = await createLead({
       full_name: '',
-      email: `new-${Date.now()}@example.com`, // Temporary email, required field
+      email: `new-${Date.now()}@example.com`,
       stage: 'new',
     })
 
-    // Focus the first cell of the new row after creation
     if (newLead) {
-      // Small delay to let the row render
       setTimeout(() => {
         const firstCell = document.querySelector('tbody tr:first-child td:nth-child(2) div')
         if (firstCell instanceof HTMLElement) {
@@ -178,7 +158,14 @@ export default function CRMPage() {
   }, [createLead])
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#0d0d0d] text-gray-100">
+    <div 
+      ref={containerRef} 
+      className="min-h-screen flex flex-col"
+      style={{ 
+        backgroundColor: colors.bg.base,
+        color: colors.text.primary,
+      }}
+    >
       <CRMHeader
         recordCount={leads.length}
         filters={filters}
@@ -190,32 +177,36 @@ export default function CRMPage() {
         selectedCount={selectedIds.size}
       />
 
-      {/* Spacer between header and table */}
-      <div className="h-4 bg-[#0d0d0d]" />
-
-      <div className="px-4 pt-2">
-        <div className="bg-[#111111] rounded-t-lg border border-[#1f1f1f] border-b-0 overflow-hidden">
-        <CRMTable
-          leads={leads}
-          loading={loading}
-          error={error}
-          onUpdate={handleUpdate}
-          onDelete={handleDelete}
-          onRetry={refetch}
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onToggleSelectAll={handleToggleSelectAll}
-          onRowClick={handleRowClick}
-        />
-
+      {/* Table container */}
+      <div className="flex-1 px-5 py-4">
+        <div 
+          className="rounded-xl border overflow-hidden"
+          style={{ 
+            backgroundColor: colors.bg.raised,
+            borderColor: colors.border.subtle,
+          }}
+        >
+          <CRMTable
+            leads={leads}
+            loading={loading}
+            error={error}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+            onRetry={refetch}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onToggleSelectAll={handleToggleSelectAll}
+            onRowClick={handleRowClick}
+          />
         </div>
+        
         {/* Add row button at bottom of table */}
         {!loading && leads.length > 0 && (
           <AddRowButton onClick={handleAdd} />
         )}
       </div>
 
-      {/* Bulk Delete Confirmation Modal - Centered */}
+      {/* Bulk Delete Confirmation Modal */}
       <AnimatePresence>
         {showDeleteModal && (
           <>
@@ -225,28 +216,55 @@ export default function CRMPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowDeleteModal(false)}
-              className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center"
+              className="fixed inset-0 z-40 flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
             />
             
-            {/* Modal - Centered */}
+            {/* Modal */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
               className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
             >
-              <div className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg shadow-2xl p-6 min-w-[320px] pointer-events-auto">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-red-500/10 rounded-lg">
-                    <Trash2 className="text-red-500" size={20} />
+              <div 
+                className="pointer-events-auto border"
+                style={{
+                  backgroundColor: colors.bg.overlay,
+                  borderColor: colors.border.default,
+                  borderRadius: radius.xl,
+                  boxShadow: shadows.xl,
+                  padding: 28,
+                  minWidth: 380,
+                }}
+              >
+                <div className="flex items-center gap-4 mb-5">
+                  <div 
+                    className="p-2.5 rounded-lg"
+                    style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)' }}
+                  >
+                    <AlertTriangle size={22} style={{ color: '#f87171' }} />
                   </div>
-                  <h3 className="text-lg font-semibold text-[#f0f0f0]">
-                    Delete selected opportunities
+                  <h3 
+                    style={{ 
+                      fontSize: typography.size.lg,
+                      fontWeight: typography.weight.semibold,
+                      color: colors.text.primary,
+                    }}
+                  >
+                    Delete selected leads
                   </h3>
                 </div>
                 
-                <p className="text-[#d0d0d0] text-sm mb-6">
+                <p 
+                  className="mb-7"
+                  style={{ 
+                    fontSize: typography.size.base,
+                    color: colors.text.secondary,
+                    lineHeight: typography.lineHeight.relaxed,
+                  }}
+                >
                   Are you sure you want to delete {selectedIds.size} selected {selectedIds.size === 1 ? 'lead' : 'leads'}? 
                   This action cannot be undone.
                 </p>
@@ -255,24 +273,42 @@ export default function CRMPage() {
                   <button
                     onClick={() => setShowDeleteModal(false)}
                     disabled={isDeleting}
-                    className="px-4 py-2 text-sm text-[#f0f0f0] bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded transition-colors disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                    style={{
+                      backgroundColor: colors.bg.surface,
+                      color: colors.text.primary,
+                      fontSize: typography.size.base,
+                      fontWeight: typography.weight.medium,
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.bg.overlay}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.surface}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleBulkDelete}
                     disabled={isDeleting}
-                    className="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded transition-colors flex items-center gap-2 disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                    style={{
+                      backgroundColor: '#dc2626',
+                      color: '#ffffff',
+                      fontSize: typography.size.base,
+                      fontWeight: typography.weight.medium,
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
                   >
                     {isDeleting ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div 
+                          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                        />
                         Deleting...
                       </>
                     ) : (
                       <>
-                        <Trash2 size={14} />
-                        Delete all selected opportunities
+                        <Trash2 size={16} />
+                        Delete {selectedIds.size} {selectedIds.size === 1 ? 'lead' : 'leads'}
                       </>
                     )}
                   </button>

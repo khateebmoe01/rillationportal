@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react'
+import { colors, layout, typography, shadows } from '../config/designTokens'
 
 interface ResizableColumnHeaderProps {
   label: string
@@ -7,16 +8,20 @@ interface ResizableColumnHeaderProps {
   maxWidth?: number
   onResize: (newWidth: number) => void
   isCheckbox?: boolean
+  isSticky?: boolean
+  stickyLeft?: number
   children?: React.ReactNode
 }
 
 function ResizableColumnHeader({
   label,
   width,
-  minWidth = 60,
-  maxWidth = 500,
+  minWidth = layout.minColumnWidth,
+  maxWidth = layout.maxColumnWidth,
   onResize,
   isCheckbox = false,
+  isSticky = false,
+  stickyLeft = 0,
   children,
 }: ResizableColumnHeaderProps) {
   const [isResizing, setIsResizing] = useState(false)
@@ -40,12 +45,10 @@ function ResizableColumnHeader({
     if (!isResizing) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Cancel any pending animation frame
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
       }
       
-      // Use requestAnimationFrame for smooth updates
       rafRef.current = requestAnimationFrame(() => {
         const diff = e.clientX - startXRef.current
         const newWidth = Math.max(minWidth, Math.min(maxWidth, startWidthRef.current + diff))
@@ -62,8 +65,6 @@ function ResizableColumnHeader({
 
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
-
-    // Add cursor style to body during resize
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
 
@@ -80,7 +81,16 @@ function ResizableColumnHeader({
 
   if (isCheckbox) {
     return (
-      <th className="w-8 px-2" style={{ width: 32, minWidth: 32, maxWidth: 32 }}>
+      <th 
+        className="sticky left-0 z-30"
+        style={{ 
+          width: layout.checkboxColumnWidth, 
+          minWidth: layout.checkboxColumnWidth, 
+          maxWidth: layout.checkboxColumnWidth,
+          backgroundColor: colors.bg.elevated,
+          borderBottom: `1px solid ${colors.border.default}`,
+        }}
+      >
         {children}
       </th>
     )
@@ -88,24 +98,63 @@ function ResizableColumnHeader({
 
   return (
     <th
-      style={{ width, minWidth: width, maxWidth: width }}
-      className="relative text-left px-2 py-1 text-[10px] font-medium text-[#f0f0f0] uppercase tracking-wide select-none whitespace-nowrap"
+      style={{ 
+        width, 
+        minWidth: width, 
+        maxWidth: width,
+        ...(isSticky ? {
+          position: 'sticky' as const,
+          left: stickyLeft,
+          zIndex: 30,
+          boxShadow: shadows.sticky,
+        } : {}),
+        backgroundColor: colors.bg.elevated,
+        borderBottom: `1px solid ${colors.border.default}`,
+      }}
+      className="relative text-left select-none whitespace-nowrap"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => !isResizing && setIsHovering(false)}
     >
-      <span className="block pr-2">{label}</span>
+      <div 
+        className="flex items-center h-full"
+        style={{ 
+          padding: '0 12px',
+          height: layout.headerHeight,
+        }}
+      >
+        <span 
+          className="uppercase tracking-wider"
+          style={{ 
+            fontSize: typography.size.xs,
+            fontWeight: typography.weight.medium,
+            color: colors.text.muted,
+            letterSpacing: typography.tracking.wider,
+          }}
+        >
+          {label}
+        </span>
+      </div>
       
       {/* Resize handle */}
       <div
-        className="absolute top-0 right-0 w-4 h-full cursor-col-resize flex items-center justify-end"
+        className="absolute top-0 right-0 h-full cursor-col-resize flex items-center justify-end"
+        style={{ 
+          width: 12,
+          zIndex: 10,
+        }}
         onMouseDown={handleMouseDown}
-        style={{ zIndex: 10 }}
       >
-        {/* Visual indicator line */}
         <div 
-          className={`w-[2px] h-full transition-colors ${
-            isResizing ? 'bg-[#006B3F]' : isHovering ? 'bg-[#555555]' : 'bg-transparent'
-          }`}
+          className="h-4 transition-all"
+          style={{
+            width: 2,
+            borderRadius: 1,
+            backgroundColor: isResizing 
+              ? colors.accent.primary 
+              : isHovering 
+                ? colors.border.strong 
+                : 'transparent',
+          }}
         />
       </div>
     </th>

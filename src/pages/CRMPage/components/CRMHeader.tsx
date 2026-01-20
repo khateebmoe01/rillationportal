@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, ChevronDown, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Search, Plus, ChevronDown, X, Check } from 'lucide-react'
 import { COLUMNS, STAGE_COLORS, LEAD_SOURCE_COLORS } from '../config/columns'
+import { colors, layout, typography, radius, shadows, transitions } from '../config/designTokens'
 import type { LeadFilters } from '../types'
 
 interface CRMHeaderProps {
@@ -15,7 +17,7 @@ interface CRMHeaderProps {
   selectedCount?: number
 }
 
-// Dropdown component for filters
+// Filter Dropdown rendered in portal to prevent clipping
 function FilterDropdown({ 
   label, 
   value, 
@@ -30,17 +32,49 @@ function FilterDropdown({
   colorMap?: Record<string, { bg: string; text: string; label?: string }>
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 })
 
+  // Update position when opened
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: Math.max(rect.width, 180),
+      })
+    }
+  }, [isOpen])
+
+  // Close on click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
+      const target = e.target as Node
+      if (triggerRef.current?.contains(target)) return
+      if (dropdownRef.current?.contains(target)) return
+      setIsOpen(false)
     }
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside)
+      }, 0)
+      return () => {
+        clearTimeout(timer)
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isOpen])
+
+  // Close on escape
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
     }
   }, [isOpen])
 
@@ -48,71 +82,105 @@ function FilterDropdown({
     ? (colorMap?.[value]?.label || value) 
     : `All ${label}`
 
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded border transition-colors ${
-          value
-            ? 'bg-[#1f1f1f] border-[#3b82f6] text-[#f0f0f0]'
-            : 'bg-[#161616] border-[#2a2a2a] text-[#f0f0f0] hover:border-[#3a3a3a]'
+  const isActive = value !== null
+
+  const dropdown = isOpen ? createPortal(
+    <motion.div
+      ref={dropdownRef}
+      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
+      style={{
+        position: 'fixed',
+        top: position.top,
+        left: position.left,
+        minWidth: position.width,
+        zIndex: 9999,
+        boxShadow: shadows.dropdown,
+      }}
+      className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg py-1.5 max-h-[280px] overflow-y-auto"
+    >
+      {/* All option */}
+      <div
+        onClick={() => { onChange(null); setIsOpen(false) }}
+        className={`px-3 py-2 cursor-pointer hover:bg-[#252525] flex items-center gap-2 transition-colors ${
+          !value ? 'text-[#3b82f6]' : 'text-[#d4d4d4]'
         }`}
+        style={{ fontSize: typography.size.base }}
       >
-        <span className="truncate max-w-[100px]">{displayValue}</span>
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        {!value && <Check size={14} className="text-[#3b82f6]" />}
+        {value && <span className="w-[14px]" />}
+        All {label}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-[#2a2a2a] my-1" />
+
+      {/* Options */}
+      {options.map((option) => {
+        const optColors = colorMap?.[option]
+        const optLabel = colorMap?.[option]?.label || option
+        const isSelected = value === option
+
+        return (
+          <div
+            key={option}
+            onClick={() => { onChange(option); setIsOpen(false) }}
+            className={`px-3 py-2 cursor-pointer hover:bg-[#252525] flex items-center gap-2 transition-colors ${
+              isSelected ? 'bg-[#1f1f1f]' : ''
+            }`}
+          >
+            {isSelected && <Check size={14} className="text-[#3b82f6]" />}
+            {!isSelected && <span className="w-[14px]" />}
+            {optColors ? (
+              <span
+                className="inline-flex items-center px-2.5 py-1 rounded-full font-medium"
+                style={{ 
+                  backgroundColor: optColors.bg, 
+                  color: optColors.text,
+                  fontSize: typography.size.xs,
+                }}
+              >
+                {optLabel}
+              </span>
+            ) : (
+              <span style={{ fontSize: typography.size.base, color: colors.text.primary }}>
+                {optLabel}
+              </span>
+            )}
+          </div>
+        )
+      })}
+    </motion.div>,
+    document.body
+  ) : null
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          flex items-center gap-2 px-3.5 py-2 rounded-lg border transition-all
+          ${isActive
+            ? 'bg-[#1a2a3a] border-[#3b82f6]/50 text-[#f5f5f5]'
+            : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#d4d4d4] hover:border-[#3a3a3a] hover:bg-[#1f1f1f]'
+          }
+        `}
+        style={{ 
+          fontSize: typography.size.base,
+          minHeight: 40,
+        }}
+      >
+        <span className="truncate max-w-[120px]">{displayValue}</span>
+        <ChevronDown 
+          size={16} 
+          className={`transition-transform text-[#737373] ${isOpen ? 'rotate-180' : ''}`} 
+        />
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -5 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -5 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 left-0 top-full mt-1 min-w-[160px] bg-[#1f1f1f] border border-[#2a2a2a] rounded shadow-lg py-1 max-h-[250px] overflow-y-auto"
-          >
-            {/* All option */}
-            <div
-              onClick={() => { onChange(null); setIsOpen(false) }}
-              className={`px-3 py-1.5 cursor-pointer hover:bg-[#2a2a2a] text-sm ${
-                !value ? 'text-[#3b82f6]' : 'text-[#f0f0f0]'
-              }`}
-            >
-              All {label}
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-[#2a2a2a] my-1" />
-
-            {/* Options */}
-            {options.map((option) => {
-              const colors = colorMap?.[option]
-              const optLabel = colorMap?.[option]?.label || option
-
-              return (
-                <div
-                  key={option}
-                  onClick={() => { onChange(option); setIsOpen(false) }}
-                  className={`px-3 py-1.5 cursor-pointer hover:bg-[#2a2a2a] flex items-center ${
-                    value === option ? 'bg-[#2a2a2a]' : ''
-                  }`}
-                >
-                  {colors ? (
-                    <span
-                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                      style={{ backgroundColor: colors.bg, color: colors.text }}
-                    >
-                      {optLabel}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-[#f0f0f0]">{optLabel}</span>
-                  )}
-                </div>
-              )
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AnimatePresence>{dropdown}</AnimatePresence>
     </div>
   )
 }
@@ -164,20 +232,43 @@ export default function CRMHeader({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="sticky top-0 z-10 bg-[#111111] border-b border-[#2a2a2a] px-4 py-3"
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="sticky top-0 z-30 border-b"
+      style={{
+        backgroundColor: colors.bg.elevated,
+        borderColor: colors.border.default,
+        height: layout.toolbarHeight,
+      }}
     >
-      <div className="flex items-center justify-between gap-4">
+      <div 
+        className="flex items-center justify-between gap-6 h-full"
+        style={{ padding: `0 ${layout.toolbarHeight / 2}px` }}
+      >
         {/* Left side: Title and count */}
         <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold text-[#f0f0f0]">CRM</h1>
-          <span className="text-sm text-[#d0d0d0]">
+          <h1 
+            className="font-semibold"
+            style={{ 
+              fontSize: typography.size.xl,
+              color: colors.text.primary,
+            }}
+          >
+            CRM
+          </h1>
+          <span 
+            className="px-2.5 py-1 rounded-md"
+            style={{ 
+              fontSize: typography.size.sm,
+              color: selectedCount > 0 ? colors.accent.secondary : colors.text.muted,
+              backgroundColor: selectedCount > 0 ? 'rgba(59, 130, 246, 0.15)' : colors.bg.surface,
+            }}
+          >
             {selectedCount > 0 ? (
               <>{selectedCount} selected</>
             ) : (
-              <>{recordCount} {recordCount === 1 ? 'record' : 'records'}</>
+              <>{recordCount.toLocaleString()} {recordCount === 1 ? 'record' : 'records'}</>
             )}
           </span>
         </div>
@@ -186,18 +277,42 @@ export default function CRMHeader({
         <div className="flex items-center gap-3">
           {/* Search */}
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888]" />
+            <Search 
+              size={18} 
+              className="absolute left-3.5 top-1/2 -translate-y-1/2"
+              style={{ color: colors.text.placeholder }}
+            />
             <input
               type="text"
               value={localSearch}
               onChange={handleSearchChange}
               placeholder="Search leads..."
-              className="w-[220px] pl-9 pr-8 py-1.5 bg-[#1f1f1f] border border-[#2a2a2a] rounded text-sm text-[#f0f0f0] placeholder-[#888888] focus:outline-none focus:border-[#3b82f6]"
+              className="rounded-lg border transition-all focus:outline-none"
+              style={{
+                width: 260,
+                paddingLeft: 42,
+                paddingRight: 36,
+                paddingTop: 10,
+                paddingBottom: 10,
+                backgroundColor: colors.bg.surface,
+                borderColor: colors.border.default,
+                fontSize: typography.size.base,
+                color: colors.text.primary,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = colors.border.focus
+                e.currentTarget.style.backgroundColor = colors.bg.overlay
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = colors.border.default
+                e.currentTarget.style.backgroundColor = colors.bg.surface
+              }}
             />
             {localSearch && (
               <button
                 onClick={clearSearch}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#888888] hover:text-[#f0f0f0]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#2a2a2a] transition-colors"
+                style={{ color: colors.text.muted }}
               >
                 <X size={14} />
               </button>
@@ -229,22 +344,43 @@ export default function CRMHeader({
           />
 
           {/* Clear filters */}
-          {hasActiveFilters && (
-            <button
-              onClick={() => onFiltersChange({})}
-              className="text-xs text-[#d0d0d0] hover:text-[#f0f0f0] underline"
-            >
-              Clear filters
-            </button>
-          )}
+          <AnimatePresence>
+            {hasActiveFilters && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                onClick={() => onFiltersChange({})}
+                className="text-[#a3a3a3] hover:text-[#f5f5f5] transition-colors px-2 py-1"
+                style={{ fontSize: typography.size.sm }}
+              >
+                Clear
+              </motion.button>
+            )}
+          </AnimatePresence>
 
           {/* Add button */}
           <button
             onClick={onAddClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-medium rounded transition-colors"
+            className="flex items-center gap-2 font-medium rounded-lg transition-all hover:shadow-lg"
+            style={{
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 10,
+              paddingBottom: 10,
+              backgroundColor: colors.accent.primary,
+              color: '#ffffff',
+              fontSize: typography.size.base,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.accent.primaryHover
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = colors.accent.primary
+            }}
           >
-            <Plus size={16} />
-            Add
+            <Plus size={18} strokeWidth={2.5} />
+            Add Lead
           </button>
         </div>
       </div>

@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
+import { colors, layout, typography } from '../../config/designTokens'
 
 interface TextCellProps {
   value: string | null
   onChange: (value: string) => void
+  isPrimary?: boolean
 }
 
-export default function TextCell({ value, onChange }: TextCellProps) {
+export default function TextCell({ value, onChange, isPrimary = false }: TextCellProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(value || '')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -58,7 +60,16 @@ export default function TextCell({ value, onChange }: TextCellProps) {
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
-        className="w-full h-8 bg-[#1f1f1f] text-[#f0f0f0] text-[11px] px-2 py-1 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
+        className="w-full outline-none border-0"
+        style={{
+          height: layout.rowHeight,
+          padding: '0 12px',
+          backgroundColor: colors.bg.overlay,
+          color: colors.text.primary,
+          fontSize: isPrimary ? typography.size.md : typography.size.base,
+          fontWeight: isPrimary ? typography.weight.medium : typography.weight.normal,
+          boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
+        }}
       />
     )
   }
@@ -66,9 +77,16 @@ export default function TextCell({ value, onChange }: TextCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full h-8 px-2 py-1 text-[11px] text-[#f0f0f0] truncate cursor-text hover:bg-[#1a1a1a] flex items-center"
+      className="w-full flex items-center cursor-text truncate transition-colors"
+      style={{ 
+        height: layout.rowHeight,
+        padding: '0 12px',
+        fontSize: isPrimary ? typography.size.md : typography.size.base,
+        fontWeight: isPrimary ? typography.weight.medium : typography.weight.normal,
+        color: value ? colors.text.primary : colors.text.placeholder,
+      }}
     >
-      {value || <span className="text-[#888888]">-</span>}
+      {value || <span style={{ color: colors.text.placeholder }}>—</span>}
     </div>
   )
 }

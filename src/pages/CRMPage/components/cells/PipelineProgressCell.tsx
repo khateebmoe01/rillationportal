@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useId } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Check, Calendar } from 'lucide-react'
+import { colors, layout, typography, shadows, radius } from '../../config/designTokens'
 import type { Lead } from '../../types'
 
 // Pipeline stages with their field mappings
@@ -42,12 +43,20 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
     stage => lead[stage.key as keyof Lead] === true
   ).length
 
+  const progressPercentage = (completedCount / PIPELINE_STAGES.length) * 100
+
   // Update dropdown position when opened
   useEffect(() => {
     if (isOpen && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const dropdownHeight = PIPELINE_STAGES.length * 56 + 60
+      
+      const spaceBelow = viewportHeight - rect.bottom
+      const shouldOpenUpward = spaceBelow < dropdownHeight && rect.top > dropdownHeight
+      
       setDropdownPosition({
-        top: rect.bottom,
+        top: shouldOpenUpward ? rect.top - dropdownHeight - 4 : rect.bottom + 4,
         left: rect.left,
       })
     }
@@ -101,10 +110,8 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
     
     // Update the date field
     if (newValue) {
-      // Set to current date when checking
       onUpdate(dateKey as keyof Lead, new Date().toISOString())
     } else {
-      // Clear date when unchecking
       onUpdate(dateKey as keyof Lead, null)
     }
   }
@@ -119,89 +126,166 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
     <motion.div
       ref={dropdownRef}
       id={dropdownId}
-      initial={{ opacity: 0, scale: 0.95, y: -5 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -5 }}
-      transition={{ duration: 0.15 }}
+      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
       style={{
         position: 'fixed',
         top: dropdownPosition.top,
         left: dropdownPosition.left,
         zIndex: 9999,
+        boxShadow: shadows.dropdown,
+        borderRadius: radius.xl,
+        minWidth: 260,
       }}
-      className="min-w-[220px] bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow-xl py-2"
+      className="bg-[#1a1a1a] border border-[#2a2a2a]"
     >
-      <div className="px-3 py-1.5 text-[10px] font-semibold text-[#888888] uppercase tracking-wider border-b border-[#2a2a2a] mb-1">
-        Pipeline Progress
+      {/* Header */}
+      <div 
+        className="px-4 py-3 border-b"
+        style={{ 
+          borderColor: colors.border.default,
+        }}
+      >
+        <div 
+          className="uppercase tracking-wider"
+          style={{ 
+            fontSize: typography.size.xs,
+            fontWeight: typography.weight.semibold,
+            color: colors.text.muted,
+            letterSpacing: typography.tracking.wider,
+          }}
+        >
+          Pipeline Progress
+        </div>
+        <div 
+          className="mt-1"
+          style={{ 
+            fontSize: typography.size.sm,
+            color: colors.text.secondary,
+          }}
+        >
+          {completedCount} of {PIPELINE_STAGES.length} stages completed
+        </div>
       </div>
       
-      {PIPELINE_STAGES.map((stage) => {
-        const isCompleted = lead[stage.key as keyof Lead] === true
-        const dateValue = lead[stage.dateKey as keyof Lead] as string | null | undefined
-        const formattedDate = formatDate(dateValue)
+      {/* Stages list */}
+      <div className="py-2">
+        {PIPELINE_STAGES.map((stage, index) => {
+          const isCompleted = lead[stage.key as keyof Lead] === true
+          const dateValue = lead[stage.dateKey as keyof Lead] as string | null | undefined
+          const formattedDate = formatDate(dateValue)
 
-        return (
-          <div
-            key={stage.key}
-            onMouseDown={(e) => handleToggleStage(e, stage.key, stage.dateKey, isCompleted)}
-            className="px-3 py-2 cursor-pointer hover:bg-[#252525] flex items-center gap-3 group"
-          >
-            {/* Checkbox */}
+          return (
             <div
-              className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${
-                isCompleted
-                  ? 'bg-[#00C853] border-[#00C853]'
-                  : 'border-[#3a3a3a] bg-[#1f1f1f] group-hover:border-[#555555]'
-              }`}
+              key={stage.key}
+              onMouseDown={(e) => handleToggleStage(e, stage.key, stage.dateKey, isCompleted)}
+              className="px-4 py-3 cursor-pointer hover:bg-[#252525] flex items-center gap-4 transition-colors"
             >
-              {isCompleted && <Check size={12} className="text-white" strokeWidth={3} />}
-            </div>
-            
-            {/* Label and date */}
-            <div className="flex-1">
-              <div className={`text-[13px] ${isCompleted ? 'text-[#f0f0f0]' : 'text-[#888888]'}`}>
-                {stage.label}
+              {/* Step number or check */}
+              <div
+                className="flex items-center justify-center transition-all"
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: radius.md,
+                  backgroundColor: isCompleted ? colors.pipeline.fill : colors.bg.surface,
+                  border: isCompleted ? 'none' : `1px solid ${colors.border.strong}`,
+                }}
+              >
+                {isCompleted ? (
+                  <Check size={14} className="text-white" strokeWidth={2.5} />
+                ) : (
+                  <span 
+                    style={{ 
+                      fontSize: typography.size.xs,
+                      color: colors.text.disabled,
+                      fontWeight: typography.weight.medium,
+                    }}
+                  >
+                    {index + 1}
+                  </span>
+                )}
               </div>
-              {isCompleted && formattedDate && (
-                <div className="flex items-center gap-1 text-[10px] text-[#666666] mt-0.5">
-                  <Calendar size={10} />
-                  {formattedDate}
+              
+              {/* Label and date */}
+              <div className="flex-1">
+                <div 
+                  style={{ 
+                    fontSize: typography.size.base,
+                    color: isCompleted ? colors.text.primary : colors.text.muted,
+                    fontWeight: isCompleted ? typography.weight.medium : typography.weight.normal,
+                  }}
+                >
+                  {stage.label}
                 </div>
-              )}
+                {isCompleted && formattedDate && (
+                  <div 
+                    className="flex items-center gap-1.5 mt-0.5"
+                    style={{ 
+                      fontSize: typography.size.xs,
+                      color: colors.text.disabled,
+                    }}
+                  >
+                    <Calendar size={11} />
+                    {formattedDate}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </motion.div>
   ) : null
 
   return (
-    <div ref={containerRef} className="relative w-full h-8">
+    <div ref={containerRef} className="relative w-full">
       {/* Display trigger */}
       <div
         onMouseDown={handleClick}
-        className="w-full h-8 px-2 py-1 flex items-center gap-1 cursor-pointer hover:bg-[#1a1a1a]"
+        className="w-full flex items-center gap-3 cursor-pointer group transition-colors"
+        style={{ 
+          height: layout.rowHeight,
+          padding: '0 12px',
+        }}
       >
-        {/* Progress indicator */}
-        <div className="flex items-center gap-1">
-          <div className="flex gap-0.5">
-            {PIPELINE_STAGES.map((stage) => {
-              const isCompleted = lead[stage.key as keyof Lead] === true
-              return (
-                <div
-                  key={stage.key}
-                  className={`w-1.5 h-1.5 rounded-sm transition-colors ${
-                    isCompleted ? 'bg-[#00C853]' : 'bg-[#2a2a2a]'
-                  }`}
-                  title={`${stage.label}${isCompleted ? ' (completed)' : ''}`}
-                />
-              )
-            })}
-          </div>
-          <span className="text-[10px] text-[#888888]">
-            {completedCount}/{PIPELINE_STAGES.length}
-          </span>
+        {/* Progress bar */}
+        <div 
+          className="flex-1 relative overflow-hidden"
+          style={{ 
+            height: 6,
+            borderRadius: radius.full,
+            backgroundColor: colors.pipeline.track,
+          }}
+        >
+          <motion.div 
+            className="absolute inset-y-0 left-0"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercentage}%` }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            style={{ 
+              borderRadius: radius.full,
+              background: progressPercentage > 0 
+                ? `linear-gradient(90deg, ${colors.pipeline.fill} 0%, ${colors.pipeline.fillSecondary} 100%)`
+                : 'transparent',
+            }}
+          />
         </div>
+        
+        {/* Fraction text */}
+        <span 
+          style={{ 
+            fontSize: typography.size.sm,
+            color: colors.text.muted,
+            fontVariantNumeric: 'tabular-nums',
+            minWidth: 28,
+            textAlign: 'right',
+          }}
+        >
+          {completedCount}/{PIPELINE_STAGES.length}
+        </span>
       </div>
 
       {/* Dropdown via portal */}

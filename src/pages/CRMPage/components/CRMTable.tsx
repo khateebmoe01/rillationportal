@@ -1,6 +1,7 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { COLUMNS } from '../config/columns'
+import { colors, layout, typography, shadows } from '../config/designTokens'
 import CRMRow from './CRMRow'
 import ResizableColumnHeader from './ResizableColumnHeader'
 import type { Lead } from '../types'
@@ -21,33 +22,64 @@ interface CRMTableProps {
 // Skeleton row component
 function SkeletonRow({ columnWidths }: { columnWidths: Record<string, number> }) {
   return (
-    <tr className="border-b border-[#1f1f1f]" style={{ height: '32px' }}>
-      <td className="p-0 w-8">
-        <div className="px-2 py-1">
+    <tr 
+      className="border-b"
+      style={{ 
+        height: layout.rowHeight,
+        borderColor: colors.border.subtle,
+      }}
+    >
+      <td 
+        className="sticky left-0 z-10"
+        style={{ 
+          width: layout.checkboxColumnWidth,
+          backgroundColor: colors.bg.raised,
+        }}
+      >
+        <div className="flex items-center justify-center h-full">
           <motion.div
-            className="h-3 w-3 bg-[#1f1f1f] rounded"
-            animate={{ opacity: [0.5, 1, 0.5] }}
+            className="rounded"
+            style={{ 
+              height: 16, 
+              width: 16, 
+              backgroundColor: colors.bg.surface,
+            }}
+            animate={{ opacity: [0.4, 0.7, 0.4] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
         </div>
       </td>
-      {COLUMNS.map((column) => (
+      {COLUMNS.map((column, index) => (
         <td
           key={column.id}
-          style={{ width: columnWidths[column.id], minWidth: columnWidths[column.id] }}
+          style={{ 
+            width: columnWidths[column.id], 
+            minWidth: columnWidths[column.id],
+            // First column (Lead Name) is sticky
+            ...(index === 0 ? {
+              position: 'sticky' as const,
+              left: layout.checkboxColumnWidth,
+              zIndex: 10,
+              backgroundColor: colors.bg.raised,
+            } : {}),
+          }}
           className="p-0"
         >
-          <div className="px-2 py-1">
+          <div style={{ padding: '0 12px' }}>
             <motion.div
-              className="h-3 bg-[#1f1f1f] rounded"
-              animate={{ opacity: [0.5, 1, 0.5] }}
+              className="rounded"
+              style={{ 
+                height: 14, 
+                backgroundColor: colors.bg.surface,
+                width: Math.min(columnWidths[column.id] - 24, 80),
+              }}
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              style={{ width: Math.min(columnWidths[column.id] - 16, 80) }}
             />
           </div>
         </td>
       ))}
-      <td className="p-0 w-8" />
+      <td style={{ width: layout.actionColumnWidth }} />
     </tr>
   )
 }
@@ -64,6 +96,8 @@ export default function CRMTable({
   onToggleSelectAll,
   onRowClick,
 }: CRMTableProps) {
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+  
   // Initialize column widths from COLUMNS config
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     const widths: Record<string, number> = {}
@@ -81,9 +115,11 @@ export default function CRMTable({
     }))
   }, [])
 
-  // Calculate total width (+40 for checkbox, +40 for delete column)
+  // Calculate total width
   const totalWidth = useMemo(() => {
-    return Object.values(columnWidths).reduce((sum, w) => sum + w, 0) + 80
+    return Object.values(columnWidths).reduce((sum, w) => sum + w, 0) + 
+           layout.checkboxColumnWidth + 
+           layout.actionColumnWidth
   }, [columnWidths])
 
   const allSelected = leads.length > 0 && selectedIds.size === leads.length
@@ -92,13 +128,27 @@ export default function CRMTable({
   // Error state
   if (error && leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="bg-[#3d2a2a] text-[#ef4444] px-4 py-2 rounded-md mb-4">
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div 
+          className="px-5 py-3 rounded-lg mb-5"
+          style={{ 
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+            color: '#f87171',
+            fontSize: typography.size.base,
+          }}
+        >
           {error}
         </div>
         <button
           onClick={onRetry}
-          className="px-4 py-2 bg-[#1f1f1f] text-[#f0f0f0] rounded hover:bg-[#2a2a2a] transition-colors text-sm"
+          className="px-5 py-2.5 rounded-lg transition-colors"
+          style={{
+            backgroundColor: colors.bg.surface,
+            color: colors.text.primary,
+            fontSize: typography.size.base,
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.bg.overlay}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.bg.surface}
         >
           Retry
         </button>
@@ -107,44 +157,76 @@ export default function CRMTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div 
+      ref={tableContainerRef}
+      className="overflow-x-auto overflow-y-visible relative"
+      style={{
+        // Smooth scrolling
+        scrollBehavior: 'smooth',
+      }}
+    >
       <table 
         className="w-full border-collapse"
         style={{ minWidth: totalWidth }}
       >
         {/* Header */}
-        <thead>
-          <tr className="bg-[#161616] border-b border-[#2a2a2a]" style={{ height: '28px' }}>
-            {/* Checkbox header */}
-            <ResizableColumnHeader
-              label=""
-              width={32}
-              onResize={() => {}}
-              isCheckbox
+        <thead className="sticky top-0 z-20">
+          <tr 
+            style={{ 
+              height: layout.headerHeight,
+              backgroundColor: colors.bg.elevated,
+              boxShadow: shadows.header,
+            }}
+          >
+            {/* Checkbox header - sticky */}
+            <th 
+              className="sticky left-0 z-30 text-left"
+              style={{ 
+                width: layout.checkboxColumnWidth,
+                minWidth: layout.checkboxColumnWidth,
+                maxWidth: layout.checkboxColumnWidth,
+                backgroundColor: colors.bg.elevated,
+                borderBottom: `1px solid ${colors.border.default}`,
+              }}
             >
-              <input
-                type="checkbox"
-                checked={allSelected}
-                ref={(el) => {
-                  if (el) el.indeterminate = someSelected
-                }}
-                onChange={onToggleSelectAll}
-                className="w-3.5 h-3.5 rounded border-[#3a3a3a] bg-[#1f1f1f] text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0 cursor-pointer accent-[#006B3F]"
-              />
-            </ResizableColumnHeader>
+              <div className="flex items-center justify-center h-full">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someSelected
+                  }}
+                  onChange={onToggleSelectAll}
+                  className="w-4 h-4 rounded cursor-pointer accent-[#22c55e]"
+                  style={{
+                    backgroundColor: colors.bg.surface,
+                    borderColor: colors.border.strong,
+                  }}
+                />
+              </div>
+            </th>
             
-            {COLUMNS.map((column) => (
+            {COLUMNS.map((column, index) => (
               <ResizableColumnHeader
                 key={column.id}
                 label={column.label}
                 width={columnWidths[column.id]}
                 onResize={handleColumnResize(column.id)}
-                minWidth={60}
-                maxWidth={500}
+                minWidth={layout.minColumnWidth}
+                maxWidth={layout.maxColumnWidth}
+                isSticky={index === 0}
+                stickyLeft={layout.checkboxColumnWidth}
               />
             ))}
             
-            <th className="w-10" /> {/* Delete column header */}
+            {/* Delete column header */}
+            <th 
+              style={{ 
+                width: layout.actionColumnWidth,
+                minWidth: layout.actionColumnWidth,
+                borderBottom: `1px solid ${colors.border.default}`,
+              }} 
+            />
           </tr>
         </thead>
 
@@ -153,7 +235,7 @@ export default function CRMTable({
           {/* Loading state */}
           {loading && leads.length === 0 && (
             <>
-              {[...Array(5)].map((_, i) => (
+              {[...Array(8)].map((_, i) => (
                 <SkeletonRow key={i} columnWidths={columnWidths} />
               ))}
             </>
@@ -162,9 +244,26 @@ export default function CRMTable({
           {/* Empty state */}
           {!loading && leads.length === 0 && !error && (
             <tr>
-              <td colSpan={COLUMNS.length + 2} className="py-16 text-center">
-                <div className="text-[#f0f0f0] text-sm">No leads found</div>
-                <div className="text-[#d0d0d0] text-xs mt-1">
+              <td 
+                colSpan={COLUMNS.length + 2} 
+                className="py-20 text-center"
+              >
+                <div 
+                  style={{ 
+                    fontSize: typography.size.md,
+                    color: colors.text.primary,
+                    fontWeight: typography.weight.medium,
+                  }}
+                >
+                  No leads found
+                </div>
+                <div 
+                  className="mt-2"
+                  style={{ 
+                    fontSize: typography.size.base,
+                    color: colors.text.muted,
+                  }}
+                >
                   Add a new lead to get started
                 </div>
               </td>

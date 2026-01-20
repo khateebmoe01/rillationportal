@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { formatDate, formatDateForInput, parseDateInput } from '../../utils/formatters'
+import { colors, layout, typography } from '../../config/designTokens'
 
 interface DateCellProps {
   value: string | null
@@ -59,17 +60,34 @@ export default function DateCell({ value, onChange }: DateCellProps) {
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
-        className="w-full h-8 bg-[#1f1f1f] text-[#f0f0f0] text-[11px] px-2 py-1 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none [color-scheme:dark]"
+        className="w-full outline-none border-0 [color-scheme:dark]"
+        style={{
+          height: layout.rowHeight,
+          padding: '0 12px',
+          backgroundColor: colors.bg.overlay,
+          color: colors.text.primary,
+          fontSize: typography.size.base,
+          boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
+        }}
       />
     )
   }
 
+  const displayValue = formatDate(value)
+  const isEmpty = displayValue === '-'
+
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full h-8 px-2 py-1 text-[11px] text-[#f0f0f0] cursor-text hover:bg-[#1a1a1a] flex items-center"
+      className="w-full flex items-center cursor-text transition-colors"
+      style={{ 
+        height: layout.rowHeight,
+        padding: '0 12px',
+        fontSize: typography.size.base,
+        color: isEmpty ? colors.text.placeholder : colors.text.muted,
+      }}
     >
-      {formatDate(value) === '-' ? <span className="text-[#888888]">-</span> : formatDate(value)}
+      {isEmpty ? '—' : displayValue}
     </div>
   )
 }

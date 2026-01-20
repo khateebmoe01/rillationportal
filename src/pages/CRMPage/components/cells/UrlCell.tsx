@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { extractDomain, ensureProtocol } from '../../utils/formatters'
+import { colors, layout, typography } from '../../config/designTokens'
+import { ExternalLink } from 'lucide-react'
 
 interface UrlCellProps {
   value: string | null
@@ -47,7 +49,6 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
     e.preventDefault()
     e.stopPropagation()
     if (!isEditing) {
-      // Check if clicking on the link
       if ((e.target as HTMLElement).tagName === 'A') {
         return
       }
@@ -66,7 +67,15 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
         placeholder="https://..."
-        className="w-full h-8 bg-[#1f1f1f] text-[#f0f0f0] text-[11px] px-2 py-1 outline-none focus:ring-2 focus:ring-[#006B3F] focus:ring-inset rounded-none border-none"
+        className="w-full outline-none border-0"
+        style={{
+          height: layout.rowHeight,
+          padding: '0 12px',
+          backgroundColor: colors.bg.overlay,
+          color: colors.text.primary,
+          fontSize: typography.size.base,
+          boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
+        }}
       />
     )
   }
@@ -77,20 +86,27 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full h-8 px-2 py-1 text-[11px] cursor-text hover:bg-[#1a1a1a] flex items-center"
+      className="w-full flex items-center cursor-text transition-colors"
+      style={{ 
+        height: layout.rowHeight,
+        padding: '0 12px',
+        fontSize: typography.size.base,
+      }}
     >
       {hasUrl ? (
         <a
           href={ensureProtocol(value)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#60a5fa] hover:underline"
+          className="flex items-center gap-1.5 hover:underline transition-colors"
+          style={{ color: colors.accent.secondary }}
           onClick={(e) => e.stopPropagation()}
         >
           {domain}
+          <ExternalLink size={12} className="opacity-60" />
         </a>
       ) : (
-        <span className="text-[#888888]">-</span>
+        <span style={{ color: colors.text.placeholder }}>—</span>
       )}
     </div>
   )
