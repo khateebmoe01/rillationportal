@@ -1,7 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { getAppIdentifier, getOAuthRedirectUrl } from '../lib/auth-helpers'
 
 interface AuthContextType {
   user: User | null
@@ -53,12 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // No auth initialization needed - using mock user
 
   // Stub auth methods for demo mode (no-op)
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (_email: string, _password: string) => {
     console.log('Demo mode: Sign in stubbed')
     return { error: null }
   }
 
-  const signInWithOAuth = async (provider: 'google' | 'github' | 'azure') => {
+  const signInWithOAuth = async (_provider: 'google' | 'github' | 'azure') => {
     console.log('Demo mode: OAuth sign in stubbed')
     return { error: null }
   }
