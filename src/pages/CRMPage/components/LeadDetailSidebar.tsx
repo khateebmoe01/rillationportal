@@ -71,13 +71,12 @@ export default function LeadDetailSidebar({ lead, isOpen, onClose }: LeadDetailS
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - only dims left side, allows clicks to pass through to table */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/40 z-40"
+            className="fixed inset-0 bg-black/40 z-40 pointer-events-none"
           />
           
           {/* Sidebar */}
@@ -86,7 +85,7 @@ export default function LeadDetailSidebar({ lead, isOpen, onClose }: LeadDetailS
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-[420px] max-w-full bg-[#141414] border-l border-[#2a2a2a] z-50 overflow-hidden flex flex-col"
+            className="fixed top-0 right-0 h-full w-[420px] max-w-full bg-[#141414] border-l border-[#2a2a2a] z-50 overflow-hidden flex flex-col pointer-events-auto"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a2a2a]">

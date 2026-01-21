@@ -10,7 +10,13 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 const url = supabaseUrl?.trim() || 'https://placeholder.supabase.co'
 const key = supabaseAnonKey?.trim() || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDUxOTIwMDAsImV4cCI6MTk2MDc2ODAwMH0.placeholder'
 
-export const supabase = createClient<Database>(url, key)
+export const supabase = createClient<Database>(url, key, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+})
 
 // Export a function to check if env vars are configured
 export function isSupabaseConfigured(): boolean {

@@ -47,7 +47,21 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
     onToggleSelect(lead.id)
   }, [lead.id, onToggleSelect])
 
-  const handleRowDoubleClick = useCallback(() => {
+  const handleRowClick = useCallback((e: React.MouseEvent<HTMLTableRowElement>) => {
+    // Don't trigger row click if clicking on interactive elements
+    const target = e.target as HTMLElement
+    if (
+      target.tagName === 'INPUT' || 
+      target.tagName === 'BUTTON' || 
+      target.tagName === 'SELECT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'A' ||
+      target.closest('[contenteditable="true"]') ||
+      target.closest('button')
+    ) {
+      return
+    }
+    
     if (onRowClick) {
       onRowClick(lead)
     }
@@ -141,7 +155,7 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
         cursor: 'pointer',
       }}
       data-lead-id={lead.id}
-      onDoubleClick={handleRowDoubleClick}
+      onClick={handleRowClick}
       onMouseEnter={(e) => {
         if (!isSelected) {
           e.currentTarget.style.backgroundColor = colors.bg.surface

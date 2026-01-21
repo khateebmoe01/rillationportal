@@ -125,23 +125,77 @@ export interface EngagedLead {
   first_name?: string
   last_name?: string
   full_name?: string
+  job_title?: string
+  seniority_level?: string
+  
+  // Company info
   company?: string
-  title?: string
+  company_domain?: string
+  company_linkedin?: string
+  company_phone?: string
+  company_website?: string
+  company_size?: string
   industry?: string
   annual_revenue?: string
-  date_created?: string
-  current_stage?: string
+  company_hq_city?: string
+  company_hq_state?: string
+  company_hq_country?: string
+  year_founded?: number
+  business_model?: string
+  funding_stage?: string
+  tech_stack?: string[]
+  is_hiring?: boolean
+  growth_score?: number
+  num_locations?: number
+  
+  // Contact info
+  lead_phone?: string
+  linkedin_url?: string
+  
+  // Pipeline stages (booleans)
   meeting_booked?: boolean
-  replied?: boolean
-  interested?: boolean
   qualified?: boolean
+  showed_up_to_disco?: boolean
+  demo_booked?: boolean
+  showed_up_to_demo?: boolean
   proposal_sent?: boolean
-  negotiation?: boolean
-  closed_won?: boolean
-  closed_lost?: boolean
+  closed?: boolean
+  
+  // Stage timestamps
+  meeting_booked_at?: string
+  qualified_at?: string
+  showed_up_to_disco_at?: string
+  demo_booked_at?: string
+  showed_up_to_demo_at?: string
+  proposal_sent_at?: string
+  closed_at?: string
+  
+  // Pipeline/sales fields
+  stage?: string
+  current_stage?: string
+  date_created?: string
+  epv?: number
+  context?: string
+  next_touchpoint?: string
+  last_contact?: string
+  lead_source?: string
+  assignee?: string
+  notes?: string
+  
+  // Meeting info
+  meeting_date?: string
+  meeting_link?: string
+  rescheduling_link?: string
+  
+  // Campaign info
   campaign_name?: string
   campaign_id?: string
+  
+  // Metadata
+  custom_variables_jsonb?: Record<string, unknown>
   created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
 
 export interface CampaignReporting {
