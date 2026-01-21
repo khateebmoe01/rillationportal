@@ -36,7 +36,7 @@ export default function Layout({ children }: LayoutProps) {
       <Sidebar />
       
       {/* Main Content - Offset by sidebar width */}
-      <div className="ml-44 flex flex-col min-h-screen">
+      <div className="ml-44 flex flex-col h-screen">
         {/* Header - Hide for CRM (has its own header) */}
         {!isCRMPage && <Header />}
 
