@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Users, Settings } from 'lucide-react'
+import { BarChart3, Users, Settings, TrendingUp } from 'lucide-react'
 
 const sections = [
   {
@@ -13,6 +13,12 @@ const sections = [
     icon: BarChart3,
     label: 'Analytics',
     path: '/performance',
+  },
+  {
+    id: 'pipeline',
+    icon: TrendingUp,
+    label: 'Pipeline',
+    path: '/pipeline',
   },
 ]
 
@@ -29,8 +35,10 @@ export default function Sidebar() {
           const isActive = section.id === 'crm'
             ? location.pathname.startsWith('/crm')
             : section.id === 'reporting'
-              ? location.pathname.startsWith('/performance') || location.pathname.startsWith('/pipeline')
-              : false
+              ? location.pathname.startsWith('/performance')
+              : section.id === 'pipeline'
+                ? location.pathname.startsWith('/pipeline')
+                : false
           
           return (
             <NavLink

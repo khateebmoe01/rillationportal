@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { 
   Users, 
   Calendar, 
-  LogOut, 
   Mail, 
   Loader2, 
   UserPlus, 
@@ -15,7 +14,7 @@ import {
   Settings,
   AlertCircle
 } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -40,9 +39,8 @@ const CALENDLY_CLIENT_ID = import.meta.env.VITE_CALENDLY_CLIENT_ID
 const CALENDLY_REDIRECT_URI = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calendly-oauth-callback`
 
 export default function SettingsPage() {
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { signOut, client, session, user } = useAuth()
+  const { client, session, user } = useAuth()
   
   // Users state
   const [email, setEmail] = useState('')
@@ -219,10 +217,6 @@ export default function SettingsPage() {
     }
   }
 
-  const handleSignOut = async () => {
-    await signOut()
-    navigate('/login', { replace: true })
-  }
 
   // Calendly OAuth functions
   const handleConnectCalendly = () => {
@@ -590,24 +584,7 @@ export default function SettingsPage() {
           </div>
         </motion.section>
 
-        {/* Sign Out Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div className="bg-rillation-card border border-rillation-border rounded-2xl overflow-hidden">
-            <div className="p-6">
-              <button
-                onClick={handleSignOut}
-                className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-medium py-3 px-4 rounded-lg transition-colors"
-              >
-                <LogOut size={18} />
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </motion.section>
+        {/* Demo mode: Sign out section hidden */}
       </div>
     </div>
   )

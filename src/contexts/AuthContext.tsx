@@ -16,96 +16,56 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Mock user for demo/development mode (no auth required)
+const MOCK_USER: User = {
+  id: 'demo-user-id',
+  email: 'demo@example.com',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  aud: 'authenticated',
+  role: 'authenticated',
+  app_metadata: {},
+  user_metadata: {
+    role: 'client',
+    client: 'Rillation Revenue', // Default client for demo
+  },
+  identities: [],
+  confirmed_at: new Date().toISOString(),
+} as User
+
+const MOCK_SESSION: Session = {
+  access_token: 'mock-access-token',
+  refresh_token: 'mock-refresh-token',
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  token_type: 'bearer',
+  user: MOCK_USER,
+} as Session
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [client, setClient] = useState<string | null>(null)
-  const [role, setRole] = useState<'admin' | 'client' | null>(null)
+  // Always use mock user for demo mode - no authentication required
+  const [user] = useState<User | null>(MOCK_USER)
+  const [session] = useState<Session | null>(MOCK_SESSION)
+  const [loading] = useState(false) // No loading needed in demo mode
+  const [client] = useState<string | null>('Rillation Revenue')
+  const [role] = useState<'admin' | 'client' | null>('client')
 
-  // Extract client and role from user metadata
-  useEffect(() => {
-    if (user?.user_metadata) {
-      // Role: 'admin' or 'client' (defaults to 'client' for portal users)
-      const userRole = user.user_metadata.role || 'client'
-      setRole(userRole as 'admin' | 'client')
-      
-      // Client: only set for client role users
-      if (userRole === 'client' && user.user_metadata.client) {
-        setClient(user.user_metadata.client)
-      } else {
-        setClient(null)
-      }
-    } else {
-      setClient(null)
-      setRole(null)
-    }
-  }, [user])
+  // No auth initialization needed - using mock user
 
-  useEffect(() => {
-    // Skip auth initialization if Supabase is not configured
-    if (!isSupabaseConfigured()) {
-      setLoading(false)
-      return
-    }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    }).catch(() => {
-      // If session fetch fails, just set loading to false
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
+  // Stub auth methods for demo mode (no-op)
   const signIn = async (email: string, password: string) => {
-    if (!isSupabaseConfigured()) {
-      return { error: new Error('Supabase is not configured') }
-    }
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error }
+    console.log('Demo mode: Sign in stubbed')
+    return { error: null }
   }
 
   const signInWithOAuth = async (provider: 'google' | 'github' | 'azure') => {
-    if (!isSupabaseConfigured()) {
-      return { error: new Error('Supabase is not configured') }
-    }
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: getOAuthRedirectUrl(),
-        queryParams: {
-          // Pass app identifier to distinguish portal vs internal hub
-          // This helps with automatic role assignment in Edge Functions
-          app: getAppIdentifier(),
-        },
-      },
-    })
-    return { error }
+    console.log('Demo mode: OAuth sign in stubbed')
+    return { error: null }
   }
 
   const signOut = async () => {
-    if (isSupabaseConfigured()) {
-      await supabase.auth.signOut()
-    }
-    setClient(null)
-    setRole(null)
+    console.log('Demo mode: Sign out stubbed')
+    // No-op in demo mode
   }
 
   return (
