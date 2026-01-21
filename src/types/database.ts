@@ -139,6 +139,8 @@ export interface EngagedLead {
   negotiation?: boolean
   closed_won?: boolean
   closed_lost?: boolean
+  campaign_name?: string
+  campaign_id?: string
   created_at?: string
 }
 
