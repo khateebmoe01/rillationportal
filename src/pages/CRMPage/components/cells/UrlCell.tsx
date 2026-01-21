@@ -67,13 +67,15 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
         placeholder="https://..."
-        className="w-full outline-none border-0"
         style={{
+          width: '100%',
           height: layout.rowHeight,
-          padding: '0 12px',
+          padding: `0 ${layout.cellPaddingX}px`,
           backgroundColor: colors.bg.overlay,
           color: colors.text.primary,
-          fontSize: typography.size.base,
+          fontSize: typography.size.sm,
+          border: 'none',
+          outline: 'none',
           boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
         }}
       />
@@ -86,11 +88,14 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full flex items-center cursor-text transition-colors"
       style={{ 
+        width: '100%',
         height: layout.rowHeight,
-        padding: '0 12px',
-        fontSize: typography.size.base,
+        padding: `0 ${layout.cellPaddingX}px`,
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'text',
+        fontSize: typography.size.sm,
       }}
     >
       {hasUrl ? (
@@ -98,12 +103,19 @@ export default function UrlCell({ value, onChange }: UrlCellProps) {
           href={ensureProtocol(value)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 hover:underline transition-colors"
-          style={{ color: colors.accent.secondary }}
+          style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            color: colors.accent.secondary,
+            textDecoration: 'none',
+          }}
           onClick={(e) => e.stopPropagation()}
+          onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
         >
           {domain}
-          <ExternalLink size={12} className="opacity-60" />
+          <ExternalLink size={11} style={{ opacity: 0.6 }} />
         </a>
       ) : (
         <span style={{ color: colors.text.placeholder }}>—</span>

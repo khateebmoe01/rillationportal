@@ -60,14 +60,17 @@ export default function DateCell({ value, onChange }: DateCellProps) {
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
-        className="w-full outline-none border-0 [color-scheme:dark]"
         style={{
+          width: '100%',
           height: layout.rowHeight,
-          padding: '0 12px',
+          padding: `0 ${layout.cellPaddingX}px`,
           backgroundColor: colors.bg.overlay,
           color: colors.text.primary,
-          fontSize: typography.size.base,
+          fontSize: typography.size.sm,
+          border: 'none',
+          outline: 'none',
           boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
+          colorScheme: 'dark',
         }}
       />
     )
@@ -79,11 +82,14 @@ export default function DateCell({ value, onChange }: DateCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full flex items-center cursor-text transition-colors"
       style={{ 
+        width: '100%',
         height: layout.rowHeight,
-        padding: '0 12px',
-        fontSize: typography.size.base,
+        padding: `0 ${layout.cellPaddingX}px`,
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'text',
+        fontSize: typography.size.sm,
         color: isEmpty ? colors.text.placeholder : colors.text.muted,
       }}
     >

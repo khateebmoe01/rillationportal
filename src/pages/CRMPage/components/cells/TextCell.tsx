@@ -60,14 +60,16 @@ export default function TextCell({ value, onChange, isPrimary = false }: TextCel
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
-        className="w-full outline-none border-0"
         style={{
+          width: '100%',
           height: layout.rowHeight,
-          padding: '0 12px',
+          padding: `0 ${layout.cellPaddingX}px`,
           backgroundColor: colors.bg.overlay,
           color: colors.text.primary,
-          fontSize: isPrimary ? typography.size.md : typography.size.base,
+          fontSize: isPrimary ? typography.size.base : typography.size.sm,
           fontWeight: isPrimary ? typography.weight.medium : typography.weight.normal,
+          border: 'none',
+          outline: 'none',
           boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
         }}
       />
@@ -77,11 +79,17 @@ export default function TextCell({ value, onChange, isPrimary = false }: TextCel
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full flex items-center cursor-text truncate transition-colors"
       style={{ 
+        width: '100%',
         height: layout.rowHeight,
-        padding: '0 12px',
-        fontSize: isPrimary ? typography.size.md : typography.size.base,
+        padding: `0 ${layout.cellPaddingX}px`,
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'text',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        fontSize: isPrimary ? typography.size.base : typography.size.sm,
         fontWeight: isPrimary ? typography.weight.medium : typography.weight.normal,
         color: value ? colors.text.primary : colors.text.placeholder,
       }}

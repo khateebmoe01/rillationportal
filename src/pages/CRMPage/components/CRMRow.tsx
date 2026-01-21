@@ -28,7 +28,7 @@ interface CRMRowProps {
 const rowVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
-  exit: { opacity: 0, transition: { duration: 0.15 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
 }
 
 function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, onRowClick, columnWidths }: CRMRowProps) {
@@ -53,13 +53,11 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
     }
   }, [lead, onRowClick])
 
-  // Handle pipeline updates (multiple fields at once)
   const handlePipelineUpdate = useCallback((field: keyof Lead, value: unknown) => {
     onUpdate(lead.id, field, value)
   }, [lead.id, onUpdate])
 
   const renderCell = (columnId: keyof Lead | 'pipeline_progress', type: string, options?: string[], isLeadName = false) => {
-    // Special case for pipeline progress (composite column)
     if (type === 'pipeline') {
       return (
         <PipelineProgressCell
@@ -134,12 +132,13 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
       initial="hidden"
       animate="visible"
       exit="exit"
-      transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.2 }}
-      className="group cursor-pointer"
+      transition={{ delay: Math.min(index * 0.015, 0.2), duration: 0.15 }}
+      className="group"
       style={{ 
         height: layout.rowHeight,
         backgroundColor: isSelected ? colors.selection.bg : 'transparent',
         borderBottom: `1px solid ${colors.border.subtle}`,
+        cursor: 'pointer',
       }}
       data-lead-id={lead.id}
       onDoubleClick={handleRowDoubleClick}
@@ -156,27 +155,37 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
     >
       {/* Checkbox column - sticky */}
       <td 
-        className="sticky left-0 z-10 transition-colors"
         style={{ 
+          position: 'sticky',
+          left: 0,
+          zIndex: 10,
           width: layout.checkboxColumnWidth,
           minWidth: layout.checkboxColumnWidth,
           maxWidth: layout.checkboxColumnWidth,
           backgroundColor: isSelected ? colors.selection.bg : colors.bg.raised,
+          transition: 'background-color 0.1s',
         }}
       >
         <div 
-          className="w-full flex items-center justify-center cursor-pointer"
-          style={{ height: layout.rowHeight }}
+          style={{
+            width: '100%',
+            height: layout.rowHeight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
           onClick={handleCheckboxClick}
         >
           <input
             type="checkbox"
             checked={isSelected}
             onChange={() => {}}
-            className="w-4 h-4 rounded cursor-pointer accent-[#22c55e]"
             style={{
-              backgroundColor: colors.bg.surface,
-              borderColor: colors.border.strong,
+              width: 14,
+              height: 14,
+              cursor: 'pointer',
+              accentColor: colors.accent.primary,
             }}
           />
         </div>
@@ -194,16 +203,18 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
               width, 
               minWidth: width, 
               maxWidth: width,
-              // First data column is sticky
-              ...(isFirstColumn ? {
-                position: 'sticky' as const,
-                left: layout.checkboxColumnWidth,
-                zIndex: 10,
-                backgroundColor: isSelected ? colors.selection.bg : colors.bg.raised,
-                boxShadow: shadows.sticky,
-              } : {}),
+              position: isFirstColumn ? 'sticky' : undefined,
+              left: isFirstColumn ? layout.checkboxColumnWidth : undefined,
+              zIndex: isFirstColumn ? 10 : undefined,
+              backgroundColor: isFirstColumn 
+                ? (isSelected ? colors.selection.bg : colors.bg.raised)
+                : undefined,
+              borderRight: isFirstColumn ? `1px solid ${colors.border.subtle}` : undefined,
+              boxShadow: isFirstColumn ? shadows.sticky : undefined,
+              transition: isFirstColumn ? 'background-color 0.1s' : undefined,
+              overflow: 'hidden',
+              padding: 0,
             }}
-            className={`p-0 overflow-hidden ${isFirstColumn ? 'transition-colors' : ''}`}
           >
             {renderCell(column.id, column.type, column.options, isLeadName)}
           </td>
@@ -212,21 +223,34 @@ function CRMRow({ lead, index, onUpdate, onDelete, isSelected, onToggleSelect, o
       
       {/* Delete action column */}
       <td 
-        className="p-0"
-        style={{ width: layout.actionColumnWidth }}
+        style={{ 
+          width: layout.actionColumnWidth,
+          minWidth: layout.actionColumnWidth,
+          padding: 0,
+        }}
       >
         <button
+          type="button"
           onClick={handleDelete}
-          className="w-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
           style={{ 
+            width: '100%',
             height: layout.rowHeight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0,
+            transition: 'opacity 0.15s, color 0.15s',
             color: colors.text.disabled,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
           }}
+          className="group-hover:opacity-100"
           title="Delete lead"
           onMouseEnter={(e) => e.currentTarget.style.color = '#f87171'}
           onMouseLeave={(e) => e.currentTarget.style.color = colors.text.disabled}
         >
-          <Trash2 size={16} />
+          <Trash2 size={14} />
         </button>
       </td>
     </motion.tr>

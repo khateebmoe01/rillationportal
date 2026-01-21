@@ -65,7 +65,7 @@ function SkeletonRow({ columnWidths }: { columnWidths: Record<string, number> })
           }}
           className="p-0"
         >
-          <div style={{ padding: '0 12px' }}>
+          <div style={{ padding: `0 ${layout.cellPaddingX}px` }}>
             <motion.div
               className="rounded"
               style={{ 
@@ -189,7 +189,14 @@ export default function CRMTable({
                 borderBottom: `1px solid ${colors.border.default}`,
               }}
             >
-              <div className="flex items-center justify-center h-full">
+              <div 
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: layout.headerHeight,
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -197,10 +204,11 @@ export default function CRMTable({
                     if (el) el.indeterminate = someSelected
                   }}
                   onChange={onToggleSelectAll}
-                  className="w-4 h-4 rounded cursor-pointer accent-[#22c55e]"
                   style={{
-                    backgroundColor: colors.bg.surface,
-                    borderColor: colors.border.strong,
+                    width: 14,
+                    height: 14,
+                    cursor: 'pointer',
+                    accentColor: colors.accent.primary,
                   }}
                 />
               </div>

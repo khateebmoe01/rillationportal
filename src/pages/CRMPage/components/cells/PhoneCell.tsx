@@ -66,13 +66,15 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
         placeholder="(555) 555-5555"
-        className="w-full outline-none border-0"
         style={{
+          width: '100%',
           height: layout.rowHeight,
-          padding: '0 12px',
+          padding: `0 ${layout.cellPaddingX}px`,
           backgroundColor: colors.bg.overlay,
           color: colors.text.primary,
-          fontSize: typography.size.base,
+          fontSize: typography.size.sm,
+          border: 'none',
+          outline: 'none',
           boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
         }}
       />
@@ -85,21 +87,32 @@ export default function PhoneCell({ value, onChange }: PhoneCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full flex items-center cursor-text transition-colors"
       style={{ 
+        width: '100%',
         height: layout.rowHeight,
-        padding: '0 12px',
-        fontSize: typography.size.base,
+        padding: `0 ${layout.cellPaddingX}px`,
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'text',
+        fontSize: typography.size.sm,
       }}
     >
       {hasPhone ? (
         <a
           href={`tel:${value}`}
-          className="hover:underline transition-colors"
-          style={{ color: colors.text.muted }}
+          style={{ 
+            color: colors.text.muted,
+            textDecoration: 'none',
+          }}
           onClick={(e) => e.stopPropagation()}
-          onMouseEnter={(e) => e.currentTarget.style.color = colors.accent.secondary}
-          onMouseLeave={(e) => e.currentTarget.style.color = colors.text.muted}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = colors.accent.secondary
+            e.currentTarget.style.textDecoration = 'underline'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = colors.text.muted
+            e.currentTarget.style.textDecoration = 'none'
+          }}
         >
           {formatted}
         </a>

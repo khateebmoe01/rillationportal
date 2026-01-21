@@ -82,10 +82,12 @@ function ResizableColumnHeader({
   if (isCheckbox) {
     return (
       <th 
-        className="sticky left-0 z-30"
         style={{ 
-          width: layout.checkboxColumnWidth, 
-          minWidth: layout.checkboxColumnWidth, 
+          position: 'sticky',
+          left: 0,
+          zIndex: 30,
+          width: layout.checkboxColumnWidth,
+          minWidth: layout.checkboxColumnWidth,
           maxWidth: layout.checkboxColumnWidth,
           backgroundColor: colors.bg.elevated,
           borderBottom: `1px solid ${colors.border.default}`,
@@ -102,32 +104,35 @@ function ResizableColumnHeader({
         width, 
         minWidth: width, 
         maxWidth: width,
-        ...(isSticky ? {
-          position: 'sticky' as const,
-          left: stickyLeft,
-          zIndex: 30,
-          boxShadow: shadows.sticky,
-        } : {}),
+        position: isSticky ? 'sticky' : 'relative',
+        left: isSticky ? stickyLeft : undefined,
+        zIndex: isSticky ? 30 : undefined,
         backgroundColor: colors.bg.elevated,
         borderBottom: `1px solid ${colors.border.default}`,
+        borderRight: isSticky ? `1px solid ${colors.border.subtle}` : undefined,
+        boxShadow: isSticky ? shadows.sticky : undefined,
+        textAlign: 'left',
+        userSelect: 'none',
+        whiteSpace: 'nowrap',
       }}
-      className="relative text-left select-none whitespace-nowrap"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => !isResizing && setIsHovering(false)}
     >
       <div 
-        className="flex items-center h-full"
         style={{ 
-          padding: '0 12px',
+          display: 'flex',
+          alignItems: 'center',
           height: layout.headerHeight,
+          padding: `0 ${layout.cellPaddingX}px`,
+          paddingRight: 20, // Extra space for resize handle
         }}
       >
         <span 
-          className="uppercase tracking-wider"
           style={{ 
             fontSize: typography.size.xs,
             fontWeight: typography.weight.medium,
             color: colors.text.muted,
+            textTransform: 'uppercase',
             letterSpacing: typography.tracking.wider,
           }}
         >
@@ -137,23 +142,31 @@ function ResizableColumnHeader({
       
       {/* Resize handle */}
       <div
-        className="absolute top-0 right-0 h-full cursor-col-resize flex items-center justify-end"
         style={{ 
+          position: 'absolute',
+          top: 0,
+          right: 0,
           width: 12,
+          height: '100%',
+          cursor: 'col-resize',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
           zIndex: 10,
         }}
         onMouseDown={handleMouseDown}
       >
         <div 
-          className="h-4 transition-all"
           style={{
             width: 2,
+            height: 16,
             borderRadius: 1,
             backgroundColor: isResizing 
               ? colors.accent.primary 
               : isHovering 
                 ? colors.border.strong 
                 : 'transparent',
+            transition: 'background-color 0.15s',
           }}
         />
       </div>

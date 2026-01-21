@@ -51,25 +51,38 @@ export default function CurrencyCell({ value, onChange }: CurrencyCellProps) {
     setIsEditing(true)
   }
 
+  // Filter input to only allow numeric characters
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    // Allow numbers, decimal point, and empty string
+    if (val === '' || /^[0-9]*\.?[0-9]*$/.test(val)) {
+      setEditValue(val)
+    }
+  }
+
   if (isEditing) {
     return (
       <input
         ref={inputRef}
-        type="number"
+        type="text"
+        inputMode="numeric"
         value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
+        onChange={handleChange}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
         placeholder="0"
-        className="w-full outline-none border-0 text-right"
         style={{
+          width: '100%',
           height: layout.rowHeight,
-          padding: '0 12px',
+          padding: `0 ${layout.cellPaddingX}px`,
           backgroundColor: colors.bg.overlay,
           color: colors.text.primary,
           fontSize: typography.size.base,
           fontVariantNumeric: 'tabular-nums',
+          textAlign: 'right',
+          border: 'none',
+          outline: 'none',
           boxShadow: `inset 0 0 0 2px ${colors.accent.primary}`,
         }}
       />
@@ -83,10 +96,14 @@ export default function CurrencyCell({ value, onChange }: CurrencyCellProps) {
   return (
     <div
       onMouseDown={handleClick}
-      className="w-full flex items-center justify-end cursor-text transition-colors"
       style={{ 
+        width: '100%',
         height: layout.rowHeight,
-        padding: '0 12px',
+        padding: `0 ${layout.cellPaddingX}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        cursor: 'text',
         fontSize: typography.size.base,
         fontVariantNumeric: 'tabular-nums',
         color: isEmpty 
