@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { AnimatePresence, motion } from 'framer-motion'
 import Layout from './components/layout/Layout'
 import ConfigError from './components/ui/ConfigError'
-import CRMPage from './pages/CRMPage'
+import AtomicCRM from './pages/AtomicCRM'
 import ClientDetailView from './pages/ClientDetailView'
 import DeepView from './pages/DeepView'
 import PipelineView from './pages/PipelineView'
@@ -72,7 +72,7 @@ function App() {
                     <Route path="/" element={<Navigate to="/performance" replace />} />
                     <Route path="/performance" element={<PageTransition><ClientDetailView /></PageTransition>} />
                     <Route path="/pipeline" element={<PageTransition><PipelineView /></PageTransition>} />
-                    <Route path="/crm" element={<PageTransition><CRMPage /></PageTransition>} />
+                    <Route path="/crm/*" element={<AtomicCRM />} />
                     <Route path="/deep-insights" element={<PageTransition><DeepView /></PageTransition>} />
                     <Route path="/insights" element={<Navigate to="/deep-insights" replace />} />
                     <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
