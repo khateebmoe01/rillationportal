@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
-import { Search, Plus, ChevronDown, X, Check } from 'lucide-react'
+import { Search, Plus, ChevronDown, X, Check, ArrowUpDown } from 'lucide-react'
 import { COLUMNS, STAGE_COLORS, LEAD_SOURCE_COLORS } from '../config/columns'
 import { colors, layout, typography, shadows } from '../config/designTokens'
-import type { LeadFilters } from '../types'
+import type { LeadFilters, SortConfig } from '../types'
+import { SORTABLE_COLUMNS } from '../types'
 
 interface CRMHeaderProps {
   recordCount: number
@@ -15,6 +16,8 @@ interface CRMHeaderProps {
   onAddClick: () => void
   uniqueAssignees: string[]
   selectedCount?: number
+  sort: SortConfig
+  onSortChange: (sort: SortConfig) => void
 }
 
 // Filter Dropdown - renders menu in portal to prevent clipping
@@ -289,6 +292,250 @@ function FilterDropdown({
   )
 }
 
+// Sort By Dropdown - single field selector with direction toggle
+function SortByDropdown({
+  sort,
+  onSortChange,
+}: {
+  sort: SortConfig
+  onSortChange: (sort: SortConfig) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 })
+
+  const updatePosition = useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: Math.max(rect.width, 180),
+      })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition()
+      window.addEventListener('scroll', updatePosition, true)
+      window.addEventListener('resize', updatePosition)
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true)
+        window.removeEventListener('resize', updatePosition)
+      }
+    }
+  }, [isOpen, updatePosition])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node
+      if (triggerRef.current?.contains(target)) return
+      if (dropdownRef.current?.contains(target)) return
+      setIsOpen(false)
+    }
+
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside, true)
+    }, 10)
+
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('mousedown', handleClickOutside, true)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+        triggerRef.current?.focus()
+      }
+    }
+    
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen])
+
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsOpen(prev => !prev)
+  }
+
+  const handleOptionClick = (field: SortConfig['field']) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onSortChange({ ...sort, field })
+    setIsOpen(false)
+  }
+
+  const toggleDirection = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onSortChange({ ...sort, direction: sort.direction === 'asc' ? 'desc' : 'asc' })
+  }
+
+  const currentLabel = SORTABLE_COLUMNS.find(c => c.id === sort.field)?.label || 'Last Activity'
+
+  const dropdownContent = isOpen ? (
+    <div
+      ref={dropdownRef}
+      style={{
+        position: 'fixed',
+        top: position.top,
+        left: position.left,
+        minWidth: position.width,
+        zIndex: 99999,
+        pointerEvents: 'auto',
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -4, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -4, scale: 0.98 }}
+        transition={{ duration: 0.12, ease: 'easeOut' }}
+        style={{
+          boxShadow: shadows.dropdown,
+          backgroundColor: '#1a1a1a',
+          border: '1px solid #2a2a2a',
+          borderRadius: 8,
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '6px 0' }}>
+          {SORTABLE_COLUMNS.map((col) => {
+            const isSelected = sort.field === col.id
+
+            return (
+              <div
+                key={col.id}
+                onClick={handleOptionClick(col.id)}
+                style={{
+                  padding: '10px 14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor: isSelected ? '#1f1f1f' : 'transparent',
+                  transition: 'background-color 0.1s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isSelected ? '#1f1f1f' : 'transparent'}
+              >
+                <span style={{ width: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {isSelected && <Check size={14} style={{ color: '#3b82f6' }} />}
+                </span>
+                <span style={{ 
+                  fontSize: typography.size.base, 
+                  color: isSelected ? '#3b82f6' : colors.text.primary 
+                }}>
+                  {col.label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
+    </div>
+  ) : null
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* Label */}
+      <span style={{ 
+        fontSize: typography.size.sm, 
+        color: colors.text.muted,
+        whiteSpace: 'nowrap',
+      }}>
+        Sort by
+      </span>
+
+      {/* Field Selector */}
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleTriggerClick}
+        style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '6px 10px',
+          borderRadius: 6,
+          border: '1px solid #2a2a2a',
+          backgroundColor: '#1a1a1a',
+          color: '#f5f5f5',
+          fontSize: typography.size.sm,
+          minHeight: 32,
+          cursor: 'pointer',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = '#3a3a3a'
+          e.currentTarget.style.backgroundColor = '#1f1f1f'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = '#2a2a2a'
+          e.currentTarget.style.backgroundColor = '#1a1a1a'
+        }}
+      >
+        <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {currentLabel}
+        </span>
+        <ChevronDown 
+          size={14} 
+          style={{ 
+            color: '#737373',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.15s',
+          }}
+        />
+      </button>
+
+      {/* Direction Toggle */}
+      <button
+        type="button"
+        onClick={toggleDirection}
+        style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '6px 10px',
+          borderRadius: 6,
+          border: '1px solid #2a2a2a',
+          backgroundColor: '#1a1a1a',
+          color: '#d4d4d4',
+          fontSize: typography.size.sm,
+          minHeight: 32,
+          cursor: 'pointer',
+          transition: 'all 0.15s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = '#3a3a3a'
+          e.currentTarget.style.backgroundColor = '#1f1f1f'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = '#2a2a2a'
+          e.currentTarget.style.backgroundColor = '#1a1a1a'
+        }}
+      >
+        <ArrowUpDown size={14} style={{ color: '#737373' }} />
+        {sort.direction === 'desc' ? 'Descending' : 'Ascending'}
+      </button>
+
+      {/* Portal for dropdown */}
+      <AnimatePresence>
+        {dropdownContent && createPortal(dropdownContent, document.body)}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export default function CRMHeader({
   recordCount,
   filters,
@@ -298,6 +545,8 @@ export default function CRMHeader({
   onAddClick,
   uniqueAssignees,
   selectedCount = 0,
+  sort,
+  onSortChange,
 }: CRMHeaderProps) {
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -449,6 +698,12 @@ export default function CRMHeader({
               </button>
             )}
           </div>
+
+          {/* Sort By */}
+          <SortByDropdown sort={sort} onSortChange={onSortChange} />
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 24, backgroundColor: '#2a2a2a' }} />
 
           {/* Filters */}
           <FilterDropdown

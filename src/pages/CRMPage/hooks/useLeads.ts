@@ -21,7 +21,7 @@ interface UseLeadsReturn {
 }
 
 export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
-  const { filters, searchQuery } = options
+  const { filters, searchQuery, sort } = options
   const { selectedClient } = useFilters()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,12 +40,16 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     setError(null)
 
     try {
+      // Determine sort field and direction
+      const sortField = sort?.field || 'updated_at'
+      const sortAscending = sort?.direction === 'asc'
+
       let query = supabase
         .from('engaged_leads')
         .select('*')
         .eq('client', selectedClient)
         .is('deleted_at', null) // Only fetch non-deleted records
-        .order('created_at', { ascending: false })
+        .order(sortField, { ascending: sortAscending })
 
       // Apply filters
       if (filters?.stage) {
@@ -79,7 +83,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     } finally {
       setLoading(false)
     }
-  }, [selectedClient, filters?.stage, filters?.assignee, filters?.lead_source, searchQuery])
+  }, [selectedClient, filters?.stage, filters?.assignee, filters?.lead_source, searchQuery, sort?.field, sort?.direction])
 
   // Enrich leads with opportunity values from client_opportunities table
   async function enrichLeadsWithOpportunityValues(leads: Lead[], client: string): Promise<Lead[]> {

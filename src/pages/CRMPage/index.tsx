@@ -7,13 +7,15 @@ import CRMHeader from './components/CRMHeader'
 import CRMTable from './components/CRMTable'
 import AddRowButton from './components/AddRowButton'
 import LeadDetailSidebar from './components/LeadDetailSidebar'
+import { DropdownProvider } from '../../contexts/DropdownContext'
 import { colors, typography, radius, shadows } from './config/designTokens'
-import type { Lead, LeadFilters } from './types'
+import type { Lead, LeadFilters, SortConfig } from './types'
 
 export default function CRMPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState<LeadFilters>({})
   const [searchQuery, setSearchQuery] = useState('')
+  const [sort, setSort] = useState<SortConfig>({ field: 'updated_at', direction: 'desc' })
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -31,7 +33,7 @@ export default function CRMPage() {
     deleteLead,
     refetch,
     uniqueAssignees,
-  } = useLeads({ filters, searchQuery })
+  } = useLeads({ filters, searchQuery, sort })
 
   // Right-click detection using refs to access current selectedIds
   const selectedIdsRef = useRef(selectedIds)
@@ -158,6 +160,7 @@ export default function CRMPage() {
   }, [createLead])
 
   return (
+    <DropdownProvider>
     <div 
       ref={containerRef} 
       className="min-h-screen flex flex-col"
@@ -175,6 +178,8 @@ export default function CRMPage() {
         onAddClick={handleAdd}
         uniqueAssignees={uniqueAssignees}
         selectedCount={selectedIds.size}
+        sort={sort}
+        onSortChange={setSort}
       />
 
       {/* Table container */}
@@ -326,5 +331,6 @@ export default function CRMPage() {
         onClose={handleCloseSidebar}
       />
     </div>
+    </DropdownProvider>
   )
 }

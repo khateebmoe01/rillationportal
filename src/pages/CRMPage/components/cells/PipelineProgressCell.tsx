@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useId } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Check, Calendar } from 'lucide-react'
+import { useDropdown } from '../../../../contexts/DropdownContext'
 import { colors, layout, typography, shadows, radius } from '../../config/designTokens'
 import type { Lead } from '../../types'
 
@@ -25,18 +26,20 @@ function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return ''
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const dateFormatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const timeFormatted = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    return `${dateFormatted} at ${timeFormatted}`
   } catch {
     return ''
   }
 }
 
 export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgressCellProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const dropdownId = useId()
+  const { isOpen, toggle, close } = useDropdown(dropdownId)
   const containerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
-  const dropdownId = useId()
 
   // Count completed stages
   const completedCount = PIPELINE_STAGES.filter(
@@ -72,7 +75,7 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
       if (dropdownRef.current && dropdownRef.current.contains(target)) {
         return
       }
-      setIsOpen(false)
+      close()
     }
 
     if (isOpen) {
@@ -84,13 +87,13 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [isOpen])
+  }, [isOpen, close])
 
   // Close on escape
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        setIsOpen(false)
+        close()
       }
     }
 
@@ -98,7 +101,7 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
       document.addEventListener('keydown', handleEscape)
       return () => document.removeEventListener('keydown', handleEscape)
     }
-  }, [isOpen])
+  }, [isOpen, close])
 
   const handleToggleStage = (e: React.MouseEvent, stageKey: string, dateKey: string, currentValue: boolean) => {
     e.preventDefault()
@@ -117,7 +120,7 @@ export default function PipelineProgressCell({ lead, onUpdate }: PipelineProgres
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsOpen(!isOpen)
+    toggle()
   }
 
   const dropdown = isOpen ? (

@@ -85,8 +85,34 @@ export interface LeadFilters {
   lead_source?: string | null
 }
 
+// Sort configuration
+export interface SortConfig {
+  field: keyof Lead | 'updated_at'
+  direction: 'asc' | 'desc'
+}
+
+// Sortable columns for the dropdown
+export const SORTABLE_COLUMNS: { id: keyof Lead | 'updated_at'; label: string }[] = [
+  { id: 'updated_at', label: 'Last Activity' },
+  { id: 'created_at', label: 'Created Time' },
+  { id: 'full_name', label: 'Lead Name' },
+  { id: 'next_touchpoint', label: 'Next Touchpoint' },
+  { id: 'company', label: 'Organization' },
+  { id: 'lead_phone', label: 'Lead Phone' },
+  { id: 'linkedin_url', label: 'LinkedIn' },
+  { id: 'context', label: 'Context' },
+  { id: 'company_phone', label: 'Company Phone' },
+  { id: 'industry', label: 'Industry' },
+  { id: 'lead_source', label: 'Lead Source' },
+  { id: 'stage', label: 'Stage' },
+  { id: 'assignee', label: 'Assignee' },
+  { id: 'meeting_date', label: 'Meeting Date' },
+  { id: 'estimated_value', label: 'Est. Value' },
+]
+
 // Options for useLeads hook
 export interface UseLeadsOptions {
   filters?: LeadFilters
   searchQuery?: string
+  sort?: SortConfig
 }

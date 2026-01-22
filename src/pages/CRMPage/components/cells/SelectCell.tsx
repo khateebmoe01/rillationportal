@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useId } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
+import { useDropdown } from '../../../../contexts/DropdownContext'
 import { colors, layout, typography, shadows, radius } from '../../config/designTokens'
 
 interface SelectCellProps {
@@ -12,11 +13,11 @@ interface SelectCellProps {
 }
 
 export default function SelectCell({ value, options, onChange, colorMap }: SelectCellProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const dropdownId = useId()
+  const { isOpen, toggle, close } = useDropdown(dropdownId)
   const containerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
-  const dropdownId = useId()
 
   // Update dropdown position when opened
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function SelectCell({ value, options, onChange, colorMap }: Selec
       if (dropdownRef.current && dropdownRef.current.contains(target)) {
         return
       }
-      setIsOpen(false)
+      close()
     }
 
     if (isOpen) {
@@ -58,13 +59,13 @@ export default function SelectCell({ value, options, onChange, colorMap }: Selec
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [isOpen])
+  }, [isOpen, close])
 
   // Close on escape
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        setIsOpen(false)
+        close()
       }
     }
 
@@ -72,19 +73,19 @@ export default function SelectCell({ value, options, onChange, colorMap }: Selec
       document.addEventListener('keydown', handleEscape)
       return () => document.removeEventListener('keydown', handleEscape)
     }
-  }, [isOpen])
+  }, [isOpen, close])
 
   const handleSelect = (e: React.MouseEvent, option: string) => {
     e.preventDefault()
     e.stopPropagation()
     onChange(option)
-    setIsOpen(false)
+    close()
   }
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsOpen(!isOpen)
+    toggle()
   }
 
   const getColors = (val: string | null) => {
