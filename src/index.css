@@ -80,14 +80,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'kern' 1;
   text-rendering: optimizeLegibility;
-  /* 10% zoom out using CSS zoom (Chromium/Safari) */
-  zoom: 0.9;
+  /* 20% zoom out using CSS zoom (Chromium/Safari) */
+  zoom: 0.8;
   margin: 0;
 }
 
 #root {
-  /* Compensate for zoom: 100% / 0.9 = 111.11% to fill viewport after zoom */
-  min-height: calc(100vh / 0.9);
+  /* Compensate for zoom: 100% / 0.8 = 125% to fill viewport after zoom */
+  min-height: calc(100vh / 0.8);
   overflow: auto;
 }
 
