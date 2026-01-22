@@ -41,7 +41,7 @@ export default function Sidebar() {
   )
   
   return (
-    <aside className="w-48 h-screen fixed left-0 top-0 bg-rillation-card border-r border-rillation-border flex flex-col py-4 z-40">
+    <aside className="w-48 fixed left-0 top-0 bg-rillation-card border-r border-rillation-border flex flex-col py-4 z-40" style={{ height: 'calc(100vh / 0.9)' }}>
       {/* Navigation Links */}
       <div className="flex flex-col">
         {sections.map((section, index) => (

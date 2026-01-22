@@ -75,17 +75,20 @@ html {
 body {
   font-family: 'Sora', system-ui, sans-serif;
   background: #000000;
-  min-height: 100vh;
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'kern' 1;
   text-rendering: optimizeLegibility;
-  /* 30% zoom out via CSS zoom (Chromium/Safari) */
-  zoom: 0.7;
-  /* Firefox fallback using transform */
-  -moz-transform: scale(0.7);
-  -moz-transform-origin: 0 0;
+  /* 10% zoom out using CSS zoom (Chromium/Safari) */
+  zoom: 0.9;
+  margin: 0;
+}
+
+#root {
+  /* Compensate for zoom: 100% / 0.9 = 111.11% to fill viewport after zoom */
+  min-height: calc(100vh / 0.9);
+  overflow: auto;
 }
 
 /* Custom scrollbar - refined for CRM */
