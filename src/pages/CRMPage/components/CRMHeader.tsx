@@ -380,7 +380,7 @@ function SortButton({
     setIsOpen(false)
   }
 
-  const handleDirectionToggle = (field: SortConfig['field'], type: SortFieldType) => (e: React.MouseEvent) => {
+  const handleDirectionToggle = (field: SortConfig['field'], _type: SortFieldType) => (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     // If this field is already selected, toggle its direction
