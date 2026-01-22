@@ -70,10 +70,6 @@
 
 html {
   scroll-behavior: smooth;
-  /* Zoom out by 30% (scale to 70%) */
-  zoom: 0.7;
-  -moz-transform: scale(0.7);
-  -moz-transform-origin: 0 0;
 }
 
 body {
@@ -85,6 +81,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'kern' 1;
   text-rendering: optimizeLegibility;
+  /* 30% zoom out via CSS zoom (Chromium/Safari) */
+  zoom: 0.7;
+  /* Firefox fallback using transform */
+  -moz-transform: scale(0.7);
+  -moz-transform-origin: 0 0;
 }
 
 /* Custom scrollbar - refined for CRM */
