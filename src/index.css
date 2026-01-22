@@ -83,6 +83,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Zoom out by 30% (scale to 70%) - applied to root container */
+#root {
+  transform: scale(0.7);
+  transform-origin: top left;
+  width: 142.857%; /* Compensate for scale: 100% / 0.7 = 142.857% */
+  height: 142.857%;
+  position: relative;
+}
+
 /* Custom scrollbar - refined for CRM */
 ::-webkit-scrollbar {
   width: 10px;
