@@ -16,6 +16,7 @@ export default {
           'card': '#141414',
           'card-hover': '#1a1a1a',
           'border': '#222222',
+          'accent': '#22c55e',
           'green': '#22c55e',
           'green-dark': '#16a34a',
           'magenta': '#d946ef',

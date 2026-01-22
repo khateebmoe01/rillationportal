@@ -4,8 +4,8 @@ import { createPortal } from 'react-dom'
 import { Search, Plus, ChevronDown, X, Check, ArrowUpDown } from 'lucide-react'
 import { COLUMNS, STAGE_COLORS, LEAD_SOURCE_COLORS } from '../config/columns'
 import { colors, layout, typography, shadows } from '../config/designTokens'
-import type { LeadFilters, SortConfig } from '../types'
-import { SORTABLE_COLUMNS } from '../types'
+import type { LeadFilters, SortConfig, SortFieldType } from '../types'
+import { SORTABLE_COLUMNS, getDirectionLabels } from '../types'
 
 interface CRMHeaderProps {
   recordCount: number
@@ -292,8 +292,8 @@ function FilterDropdown({
   )
 }
 
-// Sort By Dropdown - single field selector with direction toggle
-function SortByDropdown({
+// Sort Button - single button with dropdown showing columns and direction toggles
+function SortButton({
   sort,
   onSortChange,
 }: {
@@ -311,7 +311,7 @@ function SortByDropdown({
       setPosition({
         top: rect.bottom + 6,
         left: rect.left,
-        width: Math.max(rect.width, 180),
+        width: Math.max(rect.width, 280),
       })
     }
   }, [])
@@ -368,20 +368,36 @@ function SortByDropdown({
     setIsOpen(prev => !prev)
   }
 
-  const handleOptionClick = (field: SortConfig['field']) => (e: React.MouseEvent) => {
+  const handleColumnClick = (field: SortConfig['field']) => (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    onSortChange({ ...sort, field })
+    // If clicking the same field, toggle direction; otherwise, set new field with default direction
+    if (sort.field === field) {
+      onSortChange({ ...sort, direction: sort.direction === 'asc' ? 'desc' : 'asc' })
+    } else {
+      onSortChange({ field, direction: 'desc' })
+    }
     setIsOpen(false)
   }
 
-  const toggleDirection = (e: React.MouseEvent) => {
+  const handleDirectionToggle = (field: SortConfig['field'], type: SortFieldType) => (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    onSortChange({ ...sort, direction: sort.direction === 'asc' ? 'desc' : 'asc' })
+    // If this field is already selected, toggle its direction
+    // Otherwise, select this field with the opposite direction
+    if (sort.field === field) {
+      onSortChange({ ...sort, direction: sort.direction === 'asc' ? 'desc' : 'asc' })
+    } else {
+      onSortChange({ field, direction: 'desc' })
+    }
+    setIsOpen(false)
   }
 
-  const currentLabel = SORTABLE_COLUMNS.find(c => c.id === sort.field)?.label || 'Last Activity'
+  const currentColumn = SORTABLE_COLUMNS.find(c => c.id === sort.field)
+  const currentLabel = currentColumn?.label || 'Last Activity'
+  const currentType = currentColumn?.type || 'date'
+  const directionLabels = getDirectionLabels(currentType)
+  const currentDirectionLabel = sort.direction === 'asc' ? directionLabels.asc : directionLabels.desc
 
   const dropdownContent = isOpen ? (
     <div
@@ -408,35 +424,93 @@ function SortByDropdown({
           overflow: 'hidden',
         }}
       >
-        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '6px 0' }}>
+        <div style={{ maxHeight: 400, overflowY: 'auto', padding: '6px 0' }}>
           {SORTABLE_COLUMNS.map((col) => {
             const isSelected = sort.field === col.id
+            const colDirectionLabels = getDirectionLabels(col.type)
+            const displayDirection = isSelected 
+              ? (sort.direction === 'asc' ? colDirectionLabels.asc : colDirectionLabels.desc)
+              : colDirectionLabels.desc // Default to desc for unselected
 
             return (
               <div
                 key={col.id}
-                onClick={handleOptionClick(col.id)}
                 style={{
-                  padding: '10px 14px',
-                  cursor: 'pointer',
+                  padding: '8px 12px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 8,
+                  justifyContent: 'space-between',
+                  gap: 12,
                   backgroundColor: isSelected ? '#1f1f1f' : 'transparent',
                   transition: 'background-color 0.1s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#252525'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isSelected ? '#1f1f1f' : 'transparent'}
               >
-                <span style={{ width: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {isSelected && <Check size={14} style={{ color: '#3b82f6' }} />}
-                </span>
-                <span style={{ 
-                  fontSize: typography.size.base, 
-                  color: isSelected ? '#3b82f6' : colors.text.primary 
-                }}>
-                  {col.label}
-                </span>
+                {/* Column name - clicking selects and closes */}
+                <button
+                  type="button"
+                  onClick={handleColumnClick(col.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: 'none',
+                    border: 'none',
+                    padding: '4px 0',
+                    cursor: 'pointer',
+                    flex: 1,
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.parentElement!.style.backgroundColor = '#252525'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.parentElement!.style.backgroundColor = isSelected ? '#1f1f1f' : 'transparent'
+                  }}
+                >
+                  <span style={{ width: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isSelected && <Check size={14} style={{ color: '#3b82f6' }} />}
+                  </span>
+                  <span style={{ 
+                    fontSize: typography.size.sm, 
+                    color: isSelected ? '#3b82f6' : colors.text.primary,
+                    fontWeight: isSelected ? 500 : 400,
+                  }}>
+                    {col.label}
+                  </span>
+                </button>
+
+                {/* Direction toggle button */}
+                <button
+                  type="button"
+                  onClick={handleDirectionToggle(col.id, col.type)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '4px 8px',
+                    borderRadius: 4,
+                    border: `1px solid ${isSelected ? 'rgba(59, 130, 246, 0.3)' : '#333'}`,
+                    backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.1)' : '#252525',
+                    color: isSelected ? '#60a5fa' : '#a3a3a3',
+                    fontSize: typography.size.xs,
+                    cursor: 'pointer',
+                    transition: 'all 0.1s',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = isSelected ? 'rgba(59, 130, 246, 0.5)' : '#444'
+                    e.currentTarget.style.backgroundColor = isSelected ? 'rgba(59, 130, 246, 0.15)' : '#2a2a2a'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = isSelected ? 'rgba(59, 130, 246, 0.3)' : '#333'
+                    e.currentTarget.style.backgroundColor = isSelected ? 'rgba(59, 130, 246, 0.1)' : '#252525'
+                  }}
+                >
+                  <ArrowUpDown size={10} />
+                  {displayDirection}
+                </button>
               </div>
             )
           })}
@@ -446,17 +520,7 @@ function SortByDropdown({
   ) : null
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      {/* Label */}
-      <span style={{ 
-        fontSize: typography.size.sm, 
-        color: colors.text.muted,
-        whiteSpace: 'nowrap',
-      }}>
-        Sort by
-      </span>
-
-      {/* Field Selector */}
+    <>
       <button
         ref={triggerRef}
         type="button"
@@ -464,16 +528,19 @@ function SortByDropdown({
         style={{ 
           display: 'flex',
           alignItems: 'center',
-          gap: 6,
-          padding: '6px 10px',
-          borderRadius: 6,
+          gap: 8,
+          padding: '6px 12px',
+          borderRadius: 8,
           border: '1px solid #2a2a2a',
           backgroundColor: '#1a1a1a',
-          color: '#f5f5f5',
-          fontSize: typography.size.sm,
-          minHeight: 32,
+          color: '#d4d4d4',
+          fontSize: typography.size.base,
+          minHeight: 36,
           cursor: 'pointer',
           transition: 'all 0.15s',
+          pointerEvents: 'auto',
+          position: 'relative',
+          zIndex: 1,
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = '#3a3a3a'
@@ -484,8 +551,19 @@ function SortByDropdown({
           e.currentTarget.style.backgroundColor = '#1a1a1a'
         }}
       >
-        <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {currentLabel}
+        <ArrowUpDown size={16} style={{ color: '#737373' }} />
+        <span style={{ 
+          maxWidth: 180, 
+          overflow: 'hidden', 
+          textOverflow: 'ellipsis', 
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          <span style={{ color: '#f5f5f5' }}>{currentLabel}</span>
+          <span style={{ color: '#737373' }}>·</span>
+          <span style={{ color: '#a3a3a3', fontSize: typography.size.sm }}>{currentDirectionLabel}</span>
         </span>
         <ChevronDown 
           size={14} 
@@ -493,46 +571,16 @@ function SortByDropdown({
             color: '#737373',
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.15s',
+            marginLeft: 2,
           }}
         />
-      </button>
-
-      {/* Direction Toggle */}
-      <button
-        type="button"
-        onClick={toggleDirection}
-        style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '6px 10px',
-          borderRadius: 6,
-          border: '1px solid #2a2a2a',
-          backgroundColor: '#1a1a1a',
-          color: '#d4d4d4',
-          fontSize: typography.size.sm,
-          minHeight: 32,
-          cursor: 'pointer',
-          transition: 'all 0.15s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#3a3a3a'
-          e.currentTarget.style.backgroundColor = '#1f1f1f'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#2a2a2a'
-          e.currentTarget.style.backgroundColor = '#1a1a1a'
-        }}
-      >
-        <ArrowUpDown size={14} style={{ color: '#737373' }} />
-        {sort.direction === 'desc' ? 'Descending' : 'Ascending'}
       </button>
 
       {/* Portal for dropdown */}
       <AnimatePresence>
         {dropdownContent && createPortal(dropdownContent, document.body)}
       </AnimatePresence>
-    </div>
+    </>
   )
 }
 
@@ -699,8 +747,8 @@ export default function CRMHeader({
             )}
           </div>
 
-          {/* Sort By */}
-          <SortByDropdown sort={sort} onSortChange={onSortChange} />
+          {/* Sort Button */}
+          <SortButton sort={sort} onSortChange={onSortChange} />
 
           {/* Divider */}
           <div style={{ width: 1, height: 24, backgroundColor: '#2a2a2a' }} />

@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Layout from './components/layout/Layout'
 import ConfigError from './components/ui/ConfigError'
 import AtomicCRM from './pages/AtomicCRM'
@@ -26,7 +26,6 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 function App() {
   const configError = getSupabaseConfigError()
-  const location = useLocation()
   
   if (configError) {
     return <ConfigError />
@@ -34,21 +33,17 @@ function App() {
   
   // Demo mode: No authentication required - all routes accessible
   return (
-    <AnimatePresence mode="wait">
-      <Layout>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Navigate to="/performance" replace />} />
-            <Route path="/performance" element={<PageTransition><ClientDetailView /></PageTransition>} />
-            <Route path="/pipeline" element={<PageTransition><PipelineView /></PageTransition>} />
-            <Route path="/crm/*" element={<AtomicCRM />} />
-            <Route path="/deep-insights" element={<PageTransition><DeepView /></PageTransition>} />
-            <Route path="/insights" element={<Navigate to="/deep-insights" replace />} />
-            <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
-          </Routes>
-        </AnimatePresence>
-      </Layout>
-    </AnimatePresence>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/performance" replace />} />
+        <Route path="/performance" element={<PageTransition><ClientDetailView /></PageTransition>} />
+        <Route path="/pipeline" element={<PageTransition><PipelineView /></PageTransition>} />
+        <Route path="/crm/*" element={<AtomicCRM />} />
+        <Route path="/deep-insights" element={<PageTransition><DeepView /></PageTransition>} />
+        <Route path="/insights" element={<Navigate to="/deep-insights" replace />} />
+        <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+      </Routes>
+    </Layout>
   )
 }
 

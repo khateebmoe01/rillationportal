@@ -91,24 +91,50 @@ export interface SortConfig {
   direction: 'asc' | 'desc'
 }
 
+// Sort field types for contextual direction labels
+export type SortFieldType = 'text' | 'date' | 'select' | 'currency' | 'number'
+
+// Sortable column definition with field type
+export interface SortableColumn {
+  id: keyof Lead | 'updated_at'
+  label: string
+  type: SortFieldType
+}
+
 // Sortable columns for the dropdown
-export const SORTABLE_COLUMNS: { id: keyof Lead | 'updated_at'; label: string }[] = [
-  { id: 'updated_at', label: 'Last Activity' },
-  { id: 'created_at', label: 'Created Time' },
-  { id: 'full_name', label: 'Lead Name' },
-  { id: 'next_touchpoint', label: 'Next Touchpoint' },
-  { id: 'company', label: 'Organization' },
-  { id: 'lead_phone', label: 'Lead Phone' },
-  { id: 'linkedin_url', label: 'LinkedIn' },
-  { id: 'context', label: 'Context' },
-  { id: 'company_phone', label: 'Company Phone' },
-  { id: 'industry', label: 'Industry' },
-  { id: 'lead_source', label: 'Lead Source' },
-  { id: 'stage', label: 'Stage' },
-  { id: 'assignee', label: 'Assignee' },
-  { id: 'meeting_date', label: 'Meeting Date' },
-  { id: 'estimated_value', label: 'Est. Value' },
+export const SORTABLE_COLUMNS: SortableColumn[] = [
+  { id: 'updated_at', label: 'Last Activity', type: 'date' },
+  { id: 'created_at', label: 'Created Time', type: 'date' },
+  { id: 'stage', label: 'Stage', type: 'select' },
+  { id: 'full_name', label: 'Lead Name', type: 'text' },
+  { id: 'next_touchpoint', label: 'Next Touchpoint', type: 'date' },
+  { id: 'company', label: 'Organization', type: 'text' },
+  { id: 'lead_source', label: 'Lead Source', type: 'select' },
+  { id: 'assignee', label: 'Assignee', type: 'select' },
+  { id: 'meeting_date', label: 'Meeting Date', type: 'date' },
+  { id: 'estimated_value', label: 'Est. Value', type: 'currency' },
+  { id: 'industry', label: 'Industry', type: 'text' },
+  { id: 'context', label: 'Context', type: 'text' },
+  { id: 'lead_phone', label: 'Lead Phone', type: 'text' },
+  { id: 'company_phone', label: 'Company Phone', type: 'text' },
+  { id: 'linkedin_url', label: 'LinkedIn', type: 'text' },
 ]
+
+// Get contextual direction labels based on field type
+export function getDirectionLabels(type: SortFieldType): { asc: string; desc: string } {
+  switch (type) {
+    case 'date':
+      return { asc: 'Earliest → Latest', desc: 'Latest → Earliest' }
+    case 'select':
+      return { asc: 'First → Last', desc: 'Last → First' }
+    case 'currency':
+    case 'number':
+      return { asc: 'Low → High', desc: 'High → Low' }
+    case 'text':
+    default:
+      return { asc: 'A → Z', desc: 'Z → A' }
+  }
+}
 
 // Options for useLeads hook
 export interface UseLeadsOptions {

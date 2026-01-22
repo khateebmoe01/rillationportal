@@ -84,9 +84,8 @@ export default function Sidebar() {
       {/* Spacer to push settings to bottom */}
       <div className="flex-1" />
       
-      {/* Settings Section */}
+      {/* Settings Button */}
       <div className="mt-8">
-        <SectionHeader label="Settings" />
         <NavLink
           to="/settings"
           className={`
@@ -99,7 +98,7 @@ export default function Sidebar() {
         >
           <Settings size={18} className="flex-shrink-0" />
           <span className="text-sm font-medium whitespace-nowrap">
-            Preferences
+            Settings
           </span>
         </NavLink>
       </div>
