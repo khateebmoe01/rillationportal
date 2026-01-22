@@ -53,7 +53,7 @@ export default function Sidebar() {
             <div className="flex flex-col gap-3">
               {section.subsections.map((sub) => {
                 const SubIcon = sub.icon
-                const isSubActive = sub.exact 
+                const isSubActive = (sub as any).exact 
                   ? location.pathname === sub.path 
                   : location.pathname.startsWith(sub.path) && sub.path !== '/crm'
                 
