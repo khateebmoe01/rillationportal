@@ -27,7 +27,7 @@ export default function Layout({ children }: LayoutProps) {
       
       {/* Spacer that expands when AI panel is open */}
       <motion.div
-        className="fixed left-44 top-0 bottom-0"
+        className="fixed left-48 top-0 bottom-0"
         animate={{ width: isPanelOpen ? panelWidth : 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       />
@@ -36,7 +36,7 @@ export default function Layout({ children }: LayoutProps) {
       <Sidebar />
       
       {/* Main Content - Offset by sidebar width */}
-      <div className="ml-44 flex flex-col h-screen">
+      <div className="ml-48 flex flex-col h-screen">
         {/* Header - Hide for CRM (has its own header) */}
         {!isCRMPage && <Header />}
 

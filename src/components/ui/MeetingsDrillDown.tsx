@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronDown, ChevronUp, Calendar, Building2, MapPin, DollarSign, Users, Megaphone } from 'lucide-react'
+import { X, ChevronDown, ChevronUp, Calendar, Building2, MapPin, DollarSign, Users, Megaphone, Trash2 } from 'lucide-react'
 import { supabase, formatDateForQuery, formatDateForQueryEndOfDay } from '../../lib/supabase'
 
 interface Meeting {
@@ -28,6 +28,7 @@ interface MeetingsDrillDownProps {
   endDate: Date
   client: string
   campaignIds?: string[]
+  onRefresh?: () => void
 }
 
 export default function MeetingsDrillDown({
@@ -37,68 +38,96 @@ export default function MeetingsDrillDown({
   endDate,
   client,
   campaignIds,
+  onRefresh,
 }: MeetingsDrillDownProps) {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sortField, setSortField] = useState<'created_time' | 'company' | 'campaign_name' | 'industry'>('created_time')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
+  const fetchMeetings = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const startStr = formatDateForQuery(startDate)
+      const endStrNextDay = formatDateForQueryEndOfDay(endDate)
+
+      let query = supabase
+        .from('meetings_booked')
+        .select('*')
+        .gte('created_time', startStr)
+        .lt('created_time', endStrNextDay)
+        .eq('client', client)
+        .order('created_time', { ascending: false })
+
+      if (campaignIds && campaignIds.length > 0) {
+        query = query.in('campaign_id', campaignIds)
+      }
+
+      const { data, error: fetchError } = await query
+
+      if (fetchError) throw fetchError
+
+      const meetingsData: Meeting[] = (data || []).map((m: any) => ({
+        id: m.id || `${m.email}-${m.created_time}`,
+        email: m.email || '',
+        first_name: m.first_name || '',
+        last_name: m.last_name || '',
+        full_name: m.full_name || `${m.first_name || ''} ${m.last_name || ''}`.trim() || 'Unknown',
+        company: m.company || '-',
+        title: m.title || '-',
+        campaign_name: m.campaign_name || '-',
+        campaign_id: m.campaign_id || '',
+        created_time: m.created_time || '',
+        industry: m.industry,
+        company_size: m.company_size,
+        annual_revenue: m.annual_revenue,
+        company_hq_state: m.company_hq_state,
+        company_hq_city: m.company_hq_city,
+      }))
+
+      setMeetings(meetingsData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch meetings')
+    } finally {
+      setLoading(false)
+    }
+  }, [startDate, endDate, client, campaignIds])
 
   useEffect(() => {
     if (!isOpen) return
-
-    async function fetchMeetings() {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const startStr = formatDateForQuery(startDate)
-        const endStrNextDay = formatDateForQueryEndOfDay(endDate)
-
-        let query = supabase
-          .from('meetings_booked')
-          .select('*')
-          .gte('created_time', startStr)
-          .lt('created_time', endStrNextDay)
-          .eq('client', client)
-          .order('created_time', { ascending: false })
-
-        if (campaignIds && campaignIds.length > 0) {
-          query = query.in('campaign_id', campaignIds)
-        }
-
-        const { data, error: fetchError } = await query
-
-        if (fetchError) throw fetchError
-
-        const meetingsData: Meeting[] = (data || []).map((m: any) => ({
-          id: m.id || `${m.email}-${m.created_time}`,
-          email: m.email || '',
-          first_name: m.first_name || '',
-          last_name: m.last_name || '',
-          full_name: m.full_name || `${m.first_name || ''} ${m.last_name || ''}`.trim() || 'Unknown',
-          company: m.company || '-',
-          title: m.title || '-',
-          campaign_name: m.campaign_name || '-',
-          campaign_id: m.campaign_id || '',
-          created_time: m.created_time || '',
-          industry: m.industry,
-          company_size: m.company_size,
-          annual_revenue: m.annual_revenue,
-          company_hq_state: m.company_hq_state,
-          company_hq_city: m.company_hq_city,
-        }))
-
-        setMeetings(meetingsData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch meetings')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchMeetings()
-  }, [isOpen, startDate, endDate, client, campaignIds])
+  }, [isOpen, fetchMeetings])
+
+  // Delete meeting handler
+  const handleDeleteMeeting = async (meetingId: string) => {
+    setDeletingId(meetingId)
+    try {
+      const { error: deleteError } = await supabase
+        .from('meetings_booked')
+        .delete()
+        .eq('id', meetingId)
+
+      if (deleteError) throw deleteError
+
+      // Remove from local state
+      setMeetings(prev => prev.filter(m => m.id !== meetingId))
+      setDeleteConfirmId(null)
+      
+      // Refresh parent data if callback provided
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete meeting')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   // Sort meetings
   const sortedMeetings = [...meetings].sort((a, b) => {
@@ -170,7 +199,7 @@ export default function MeetingsDrillDown({
 
         {/* Table Header */}
         <div className="px-6 py-3 bg-slate-800/50 border-b border-slate-700/30">
-          <div className="grid grid-cols-12 gap-4 text-xs font-medium text-slate-400 uppercase tracking-wide">
+          <div className="grid grid-cols-13 gap-4 text-xs font-medium text-slate-400 uppercase tracking-wide">
             <button 
               onClick={() => handleSort('created_time')}
               className="col-span-1 flex items-center gap-1 hover:text-white transition-colors text-left"
@@ -203,6 +232,7 @@ export default function MeetingsDrillDown({
               Campaign
               {sortField === 'campaign_name' && (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />)}
             </button>
+            <div className="col-span-1 text-right">Actions</div>
           </div>
         </div>
 
@@ -224,7 +254,7 @@ export default function MeetingsDrillDown({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.02 }}
-                  className="px-6 py-4 hover:bg-slate-800/40 transition-colors grid grid-cols-12 gap-4 items-center"
+                  className="px-6 py-4 hover:bg-slate-800/40 transition-colors grid grid-cols-13 gap-4 items-center group"
                 >
                   {/* Date */}
                   <div className="col-span-1">
@@ -314,6 +344,35 @@ export default function MeetingsDrillDown({
                         {meeting.campaign_name}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-span-1 flex justify-end">
+                    {deleteConfirmId === meeting.id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleDeleteMeeting(meeting.id)}
+                          disabled={deletingId === meeting.id}
+                          className="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === meeting.id ? '...' : 'Yes'}
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirmId(meeting.id)}
+                        className="p-1.5 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Remove from analytics"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))}

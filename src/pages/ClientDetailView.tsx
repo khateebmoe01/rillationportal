@@ -57,7 +57,7 @@ export default function ClientDetailView() {
       : undefined
 
   // Fetch data - pass selectedCampaigns to filter
-  const { metrics, chartData, loading, error } = useQuickViewData({
+  const { metrics, chartData, loading, error, refetch: refetchQuickView } = useQuickViewData({
     startDate: dateRange.start,
     endDate: dateRange.end,
     client: selectedClient || undefined,
@@ -279,6 +279,7 @@ export default function ClientDetailView() {
             endDate={dateRange.end}
             client={selectedClient}
             campaignIds={tableCampaignSelection.length > 0 ? tableCampaignSelection : undefined}
+            onRefresh={refetchQuickView}
           />
 
           {/* Trend Chart */}
