@@ -70,6 +70,10 @@
 
 html {
   scroll-behavior: smooth;
+  /* Zoom out by 30% (scale to 70%) */
+  zoom: 0.7;
+  -moz-transform: scale(0.7);
+  -moz-transform-origin: 0 0;
 }
 
 body {
